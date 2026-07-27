@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
     "@krave/analytics": "workspace:*",
     "@krave/database": "workspace:*",
     "@krave/emails": "workspace:*",
@@ -17,9 +18,13 @@
     "@krave/ui": "workspace:*",
     "@krave/utils": "workspace:*",
     "@krave/validation": "workspace:*",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.45.0",
     "next": "^16.2.12",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.53.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@krave/config": "workspace:*",

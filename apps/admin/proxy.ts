@@ -1,17 +1,67 @@
 /**
  * Admin App Proxy (Next.js 16+)
  *
- * Milestone 1: Simple passthrough proxy with basic route protection structure.
- * Full Supabase Auth integration will be wired in Milestone 2.
- *
- * For now, all routes pass through (login page handles its own state).
+ * Enforces authentication on all protected admin routes.
+ * Unauthenticated users are redirected to /login.
+ * Authenticated users on /login are redirected to /dashboard.
  */
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
-export function proxy(request: NextRequest) {
-  // Milestone 2: Add Supabase session refresh + RBAC checks here
-  return NextResponse.next({ request });
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/webinars",
+  "/registrations",
+  "/analytics",
+  "/settings",
+];
+
+export async function proxy(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  // IMPORTANT: always use getUser() — validates session server-side
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  // Redirect unauthenticated → /login
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
+  if (isProtected && !user) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Redirect authenticated → /dashboard (from /login or /)
+  if ((pathname === "/login" || pathname === "/") && user) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  return supabaseResponse;
 }
 
 export const config = {

@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { PostHogProvider } from "@krave/analytics/provider";
+import { getSiteTheme } from "./lib/get-site-theme";
+import { DynamicThemeProvider } from "./components/dynamic-theme-provider";
 
 import "@krave/ui/styles/globals.css";
-
 
 const inter = Inter({
   subsets: ["latin"],
@@ -83,13 +84,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const initialTheme = await getSiteTheme();
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <DynamicThemeProvider initialTheme={initialTheme} />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <PostHogProvider>{children}</PostHogProvider>
       </body>

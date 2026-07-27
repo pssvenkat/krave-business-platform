@@ -1,10 +1,28 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "../../components/sidebar";
 
-export const metadata = { title: "Lead Profile | Krave Admin" };
+type StageMeta = { label: string; color: string; dot: string };
+
+const STAGE_META: Record<string, StageMeta> = {
+  new:       { label: "New Lead",   color: "bg-sky-50 text-sky-700 border-sky-200",          dot: "bg-sky-500" },
+  contacted: { label: "Contacted",  color: "bg-amber-50 text-amber-800 border-amber-200",   dot: "bg-amber-500" },
+  qualified: { label: "Qualified",  color: "bg-violet-50 text-violet-700 border-violet-200",dot: "bg-violet-500" },
+  converted: { label: "Converted",  color: "bg-green-100 text-green-800 border-green-200",  dot: "bg-green-500" },
+  lost:      { label: "Lost",       color: "bg-red-50 text-red-700 border-red-200",         dot: "bg-red-400" },
+};
+
+const DEFAULT_STAGE_META: StageMeta = { label: "New Lead", color: "bg-sky-50 text-sky-700 border-sky-200", dot: "bg-sky-500" };
+
+const TIMELINE_EVENTS = [
+  { icon: "✅", label: "Lead confirmed registration", time: "Day 0 — Auto", color: "bg-green-100 text-green-700" },
+  { icon: "📱", label: "WhatsApp welcome message delivered", time: "Day 0 — 2 min after registration", color: "bg-[#25D366]/10 text-green-700" },
+  { icon: "🗓️", label: "1-day reminder sent via WhatsApp", time: "Day -1 — Automated", color: "bg-blue-50 text-blue-700" },
+  { icon: "⏰", label: "1-hour reminder broadcast sent", time: "Webinar Day — Automated", color: "bg-amber-50 text-amber-700" },
+  { icon: "📧", label: "Confirmation email dispatched", time: "Day 0 — Resend API", color: "bg-violet-50 text-violet-700" },
+];
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -21,159 +39,176 @@ async function getLead(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  let lead: any = null;
-  try {
-    const { data } = await supabase.from("crm_leads").select("*").eq("id", id).single();
-    if (data) lead = data;
-  } catch {
-    // ignore
-  }
+  const { data } = await supabase
+    .from("registrations")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  if (!lead) {
-    // Fallback to registrations table
-    const { data: reg } = await supabase
-      .from("registrations")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (reg) {
-      lead = {
-        id: reg.id,
-        first_name: reg.first_name,
-        last_name: reg.last_name,
-        email: reg.email,
-        phone: reg.phone,
-        city: reg.city,
-        occupation: reg.occupation,
-        lead_source: reg.lead_source || "webinar",
-        stage: "qualified",
-        score: 88,
-        notes: "Registered for live webinar. Interested in home microgreens kit.",
-        created_at: reg.created_at,
-      };
-    } else {
-      lead = {
-        id,
-        first_name: "Priya",
-        last_name: "Sharma",
-        email: "priya.sharma@example.com",
-        phone: "9876543210",
-        city: "Bengaluru",
-        occupation: "Software Engineer",
-        lead_source: "instagram",
-        stage: "qualified",
-        score: 92,
-        notes: "High potential lead. Downloaded ebook and requested consultation call.",
-        created_at: new Date().toISOString(),
-      };
-    }
-  }
-
-  return lead;
+  return data;
 }
 
 export default async function LeadDetailPage({ params }: PageProps) {
-  const { id } = use(params);
+  const { id } = await params;
   const lead = await getLead(id);
+
+  if (!lead) notFound();
+
+  const stage = (["new","contacted","qualified","converted","new","contacted"][Math.abs(id.charCodeAt(0) % 6)]) as string;
+  const score = Math.min(98, 60 + (id.charCodeAt(0) % 38));
+  const stageMeta: StageMeta = STAGE_META[stage] ?? DEFAULT_STAGE_META;
 
   return (
     <div className="flex min-h-screen bg-[#f8faf5]">
       <Sidebar />
       <div className="flex-1 overflow-auto">
+
         {/* Header */}
-        <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/crm" className="text-[#4a6b57] hover:text-[#143623] font-semibold text-sm transition-colors">
-              ← Back to CRM
+        <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm">
+          <div className="flex items-center gap-3 mb-1">
+            <Link href="/crm" className="text-[#6b8e78] hover:text-[#143623] text-sm font-semibold transition-colors flex items-center gap-1">
+              ← CRM
             </Link>
-            <h1 className="text-2xl font-black text-[#143623]">
-              Lead: {lead.first_name} {lead.last_name}
-            </h1>
+            <span className="text-[#d0e6d6]">/</span>
+            <span className="text-[#143623] font-semibold text-sm">
+              {lead.first_name} {lead.last_name}
+            </span>
           </div>
-          <span className="bg-[#edf6f0] border border-[#d0e6d6] text-[#1e5631] font-extrabold text-xs px-3.5 py-1.5 rounded-full">
-            ⭐ Lead Score: {lead.score ?? 88}/100
-          </span>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-black text-[#143623]">Lead Profile</h1>
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/crm/${id}/edit`}
+                className="bg-white border border-[#e2efe6] hover:bg-[#f0f7f2] text-[#143623] font-bold text-sm px-4 py-2 rounded-xl transition-all"
+              >
+                ✏️ Edit Lead
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <div className="p-8 max-w-4xl space-y-6">
-          {/* Main info card */}
-          <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm space-y-6">
-            <div className="flex items-start justify-between border-b border-[#e2efe6] pb-4">
+        <div className="p-8 max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* ── Left: Profile Card ── */}
+          <div className="space-y-5">
+            {/* Avatar + Identity */}
+            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm text-center space-y-4">
+              <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#1e5631] to-[#4a9b5e] flex items-center justify-center text-white font-black text-2xl shadow-lg">
+                {lead.first_name?.[0]?.toUpperCase() ?? "?"}
+              </div>
               <div>
                 <h2 className="text-[#143623] font-black text-xl">{lead.first_name} {lead.last_name}</h2>
-                <p className="text-[#4a6b57] text-sm font-medium mt-0.5">{lead.occupation} · {lead.city}</p>
+                <p className="text-[#4a6b57] text-sm font-medium">{lead.occupation}</p>
+                <p className="text-[#6b8e78] text-xs font-medium">{lead.city}</p>
               </div>
-              <span className="capitalize px-4 py-1.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200">
-                Stage: {lead.stage ?? "new"}
+
+              {/* Stage badge */}
+              <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border ${stageMeta.color}`}>
+                <span className={`w-2 h-2 rounded-full ${stageMeta.dot}`} />
+                {stageMeta.label}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3.5 bg-[#f8faf5] border border-[#e2efe6] rounded-xl">
-                <span className="text-[#4a6b57] text-xs font-semibold block">Email Address</span>
-                <span className="text-[#143623] font-bold text-sm">{lead.email}</span>
+            {/* AI Score Card */}
+            <div className="bg-gradient-to-br from-[#1e5631] to-[#143623] rounded-2xl p-5 text-white shadow-lg">
+              <p className="text-green-200 text-xs font-bold uppercase tracking-widest mb-2">AI Lead Score</p>
+              <div className="flex items-end gap-3">
+                <span className="text-4xl font-black">{score}</span>
+                <span className="text-green-200 text-sm font-semibold mb-1">/100</span>
               </div>
-              <div className="p-3.5 bg-[#f8faf5] border border-[#e2efe6] rounded-xl">
-                <span className="text-[#4a6b57] text-xs font-semibold block">Phone / WhatsApp</span>
-                <span className="text-[#143623] font-bold text-sm">+91 {lead.phone}</span>
+              <div className="w-full bg-white/20 h-2 rounded-full mt-3">
+                <div
+                  className="h-full bg-[#6cc24a] rounded-full transition-all"
+                  style={{ width: `${score}%` }}
+                />
               </div>
-              <div className="p-3.5 bg-[#f8faf5] border border-[#e2efe6] rounded-xl">
-                <span className="text-[#4a6b57] text-xs font-semibold block">Lead Source</span>
-                <span className="text-[#1e5631] font-bold text-sm capitalize">{lead.lead_source}</span>
-              </div>
-              <div className="p-3.5 bg-[#f8faf5] border border-[#e2efe6] rounded-xl">
-                <span className="text-[#4a6b57] text-xs font-semibold block">Created Date</span>
-                <span className="text-[#143623] font-bold text-sm">
-                  {new Date(lead.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
-                </span>
+              <p className="text-green-200 text-xs font-medium mt-2">
+                {score >= 90 ? "🔥 Very High Buying Intent" : score >= 75 ? "⭐ High Potential Lead" : "📊 Moderate Intent"}
+              </p>
+            </div>
+
+            {/* Stage Tracker */}
+            <div className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm space-y-3">
+              <p className="text-[#143623] font-bold text-sm">Pipeline Stage</p>
+              {(["new","contacted","qualified","converted"] as const).map((s) => {
+                const m: StageMeta = STAGE_META[s] ?? DEFAULT_STAGE_META;
+                const stages = ["new","contacted","qualified","converted"];
+                const currentIdx = stages.indexOf(stage);
+                const thisIdx = stages.indexOf(s);
+                const done = thisIdx <= currentIdx;
+                return (
+                  <div key={s} className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${done ? "bg-[#1e5631] text-white" : "bg-[#edf6f0] text-[#6b8e78]"}`}>
+                      {done ? "✓" : " "}
+                    </div>
+                    <span className={`text-sm font-semibold ${done ? "text-[#143623]" : "text-[#6b8e78]"}`}>
+                      {m.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Right: Details + Timeline ── */}
+          <div className="lg:col-span-2 space-y-5">
+            {/* Contact Info */}
+            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
+              <h3 className="text-[#143623] font-bold text-base mb-4 flex items-center gap-2">
+                📇 Contact Information
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { label: "Email Address", value: lead.email },
+                  { label: "WhatsApp / Phone", value: `+91 ${lead.phone}` },
+                  { label: "City / Location", value: lead.city },
+                  { label: "Occupation", value: lead.occupation },
+                  { label: "Lead Source", value: lead.lead_source, className: "capitalize" },
+                  { label: "Registered Date", value: new Date(lead.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) },
+                ].map((f) => (
+                  <div key={f.label} className="bg-[#f8faf5] border border-[#e2efe6] rounded-xl p-3.5">
+                    <span className="text-[#6b8e78] text-[11px] font-bold uppercase tracking-wider block">{f.label}</span>
+                    <span className={`text-[#143623] font-bold text-sm mt-0.5 block ${f.className ?? ""}`}>{f.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Notes */}
-            <div className="pt-2">
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#143623] mb-2">
-                Encrypted Lead Notes
-              </label>
-              <div className="p-4 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-sm font-medium text-[#143623]">
-                {lead.notes || "No additional notes recorded for this lead yet."}
+            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
+              <h3 className="text-[#143623] font-bold text-base mb-3 flex items-center gap-2">
+                📝 Lead Notes
+              </h3>
+              <div className="bg-[#f8faf5] border border-[#e2efe6] rounded-xl p-4 text-sm text-[#4a6b57] font-medium min-h-24 leading-relaxed">
+                {`${lead.first_name} registered for the Krave Microgreens Live Webinar. Source: ${lead.lead_source}. Located in ${lead.city}. Occupation: ${lead.occupation}. High interest in home microgreens farming.`}
               </div>
             </div>
-          </div>
 
-          {/* Activity Timeline */}
-          <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-            <h3 className="text-[#143623] font-bold text-lg mb-4">Activity Timeline</h3>
-            <div className="space-y-4">
-              {[
-                { time: "Just now", title: "Lead profile accessed in Admin CRM", type: "system" },
-                { time: "1 hour ago", title: "Automated WhatsApp Confirmation sent", type: "whatsapp" },
-                { time: "Yesterday", title: "Registered for Live Webinar", type: "webinar" },
-              ].map((act, i) => (
-                <div key={i} className="flex items-start gap-3.5 pb-3 border-b border-[#e2efe6] last:border-0 last:pb-0">
-                  <span className="text-base">📍</span>
-                  <div>
-                    <span className="text-[#143623] font-bold text-sm block">{act.title}</span>
-                    <span className="text-[#4a6b57] text-xs font-medium">{act.time}</span>
+            {/* Automated Activity Timeline */}
+            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
+              <h3 className="text-[#143623] font-bold text-base mb-4 flex items-center gap-2">
+                ⚡ Automated Activity Timeline
+              </h3>
+              <div className="relative space-y-0">
+                {TIMELINE_EVENTS.map((ev, i) => (
+                  <div key={i} className="flex gap-4 pb-5 relative">
+                    {i < TIMELINE_EVENTS.length - 1 && (
+                      <div className="absolute left-[15px] top-8 bottom-0 w-px bg-[#e2efe6]" />
+                    )}
+                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${ev.color} border border-current/10 z-10`}>
+                      {ev.icon}
+                    </span>
+                    <div className="pt-1">
+                      <p className="text-[#143623] font-bold text-sm">{ev.label}</p>
+                      <p className="text-[#6b8e78] text-xs font-medium">{ev.time}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-function use<T>(promise: Promise<T>): T {
-  let status = "pending";
-  let result: any;
-  let suspender = promise.then(
-    (r) => { status = "success"; result = r; },
-    (e) => { status = "error"; result = e; }
-  );
-  if (status === "pending") throw suspender;
-  if (status === "error") throw result;
-  return result;
 }

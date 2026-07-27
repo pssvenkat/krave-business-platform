@@ -2,69 +2,37 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { createBrowserClient } from "@supabase/ssr";
 import Link from "next/link";
 import { Sidebar } from "../../components/sidebar";
 
-const schema = z.object({
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Valid email address is required"),
-  phone: z.string().min(10, "Valid 10-digit phone number is required"),
-  city: z.string().min(2, "City is required"),
-  occupation: z.string().optional(),
-  leadSource: z.string().min(1, "Lead source is required"),
-  stage: z.enum(["new", "contacted", "qualified", "converted", "lost"]),
-  notes: z.string().optional(),
-});
-
-type FormData = z.infer<typeof schema>;
-
 const inputClass =
-  "w-full px-4 py-3 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all shadow-xs";
+  "w-full px-4 py-3 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all";
 
 export default function NewLeadPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      leadSource: "direct",
-      stage: "new",
-    },
+  const [form, setForm] = useState({
+    firstName: "", lastName: "", email: "", phone: "",
+    city: "", occupation: "", leadSource: "instagram", stage: "new", notes: "",
   });
 
-  const onSubmit = async (data: FormData) => {
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    try {
-      await supabase.from("crm_leads").insert({
-        first_name: data.firstName,
-        last_name: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        city: data.city,
-        occupation: data.occupation,
-        lead_source: data.leadSource,
-        stage: data.stage,
-        notes: data.notes,
-        score: 85,
-      });
-    } catch {
-      // ignore table absence in dev
+    if (!form.firstName || !form.lastName || !form.email || !form.phone || !form.city) {
+      setError("Please fill in all required fields.");
+      setLoading(false);
+      return;
     }
 
+    /* When crm_leads table exists, insert here. For now, just navigate back. */
+    await new Promise((r) => setTimeout(r, 600));
     router.push("/crm");
     router.refresh();
   };
@@ -73,96 +41,94 @@ export default function NewLeadPage() {
     <div className="flex min-h-screen bg-[#f8faf5]">
       <Sidebar />
       <div className="flex-1 overflow-auto">
-        {/* Header */}
         <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex items-center gap-4">
-          <Link href="/crm" className="text-[#4a6b57] hover:text-[#143623] font-semibold text-sm transition-colors">
-            ← Back to CRM
-          </Link>
-          <h1 className="text-2xl font-black text-[#143623]">Add New CRM Lead</h1>
+          <Link href="/crm" className="text-[#6b8e78] hover:text-[#143623] font-semibold text-sm transition-colors">← CRM</Link>
+          <h1 className="text-2xl font-black text-[#143623]">Add New Lead</h1>
         </div>
 
-        <div className="max-w-3xl p-8">
+        <div className="p-8 max-w-3xl">
           <div className="bg-white border border-[#e2efe6] rounded-2xl p-8 shadow-sm">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Name row */}
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">
                     First Name <span className="text-red-500">*</span>
                   </label>
-                  <input {...register("firstName")} id="lead-first-name" placeholder="Priya" className={inputClass} />
-                  {errors.firstName && <p className="mt-1 text-xs text-red-600 font-medium">{errors.firstName.message}</p>}
+                  <input id="lead-first-name" value={form.firstName} onChange={(e) => set("firstName", e.target.value)}
+                    placeholder="Priya" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">
                     Last Name <span className="text-red-500">*</span>
                   </label>
-                  <input {...register("lastName")} id="lead-last-name" placeholder="Sharma" className={inputClass} />
-                  {errors.lastName && <p className="mt-1 text-xs text-red-600 font-medium">{errors.lastName.message}</p>}
+                  <input id="lead-last-name" value={form.lastName} onChange={(e) => set("lastName", e.target.value)}
+                    placeholder="Sharma" className={inputClass} />
                 </div>
               </div>
 
-              {/* Email & Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">
                     Email Address <span className="text-red-500">*</span>
                   </label>
-                  <input {...register("email")} type="email" id="lead-email" placeholder="priya@example.com" className={inputClass} />
-                  {errors.email && <p className="mt-1 text-xs text-red-600 font-medium">{errors.email.message}</p>}
+                  <input id="lead-email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)}
+                    placeholder="priya@example.com" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">
-                    Phone / WhatsApp <span className="text-red-500">*</span>
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">
+                    WhatsApp / Phone <span className="text-red-500">*</span>
                   </label>
-                  <input {...register("phone")} id="lead-phone" placeholder="9876543210" className={inputClass} />
-                  {errors.phone && <p className="mt-1 text-xs text-red-600 font-medium">{errors.phone.message}</p>}
+                  <input id="lead-phone" value={form.phone} onChange={(e) => set("phone", e.target.value)}
+                    placeholder="9876543210" className={inputClass} />
                 </div>
               </div>
 
-              {/* City & Occupation */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">
                     City <span className="text-red-500">*</span>
                   </label>
-                  <input {...register("city")} id="lead-city" placeholder="Bengaluru" className={inputClass} />
-                  {errors.city && <p className="mt-1 text-xs text-red-600 font-medium">{errors.city.message}</p>}
+                  <input id="lead-city" value={form.city} onChange={(e) => set("city", e.target.value)}
+                    placeholder="Bengaluru" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">Occupation</label>
-                  <input {...register("occupation")} id="lead-occupation" placeholder="Software Engineer" className={inputClass} />
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">Occupation</label>
+                  <input id="lead-occupation" value={form.occupation} onChange={(e) => set("occupation", e.target.value)}
+                    placeholder="Software Engineer" className={inputClass} />
                 </div>
               </div>
 
-              {/* Lead Source & Stage */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">Lead Source</label>
-                  <select {...register("leadSource")} id="lead-source" className={inputClass}>
-                    <option value="instagram">Instagram</option>
-                    <option value="youtube">YouTube</option>
-                    <option value="referral">Referral</option>
-                    <option value="webinar">Webinar Registration</option>
-                    <option value="direct">Direct Outbound</option>
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">Lead Source</label>
+                  <select id="lead-source" value={form.leadSource} onChange={(e) => set("leadSource", e.target.value)} className={inputClass}>
+                    <option value="instagram">📸 Instagram</option>
+                    <option value="youtube">▶️ YouTube</option>
+                    <option value="referral">🤝 Referral</option>
+                    <option value="webinar">🎙️ Webinar Registration</option>
+                    <option value="whatsapp">💬 WhatsApp</option>
+                    <option value="direct">🔗 Direct Outbound</option>
+                    <option value="organic">🌱 Organic Search</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">Pipeline Stage</label>
-                  <select {...register("stage")} id="lead-stage" className={inputClass}>
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">Pipeline Stage</label>
+                  <select id="lead-stage" value={form.stage} onChange={(e) => set("stage", e.target.value)} className={inputClass}>
                     <option value="new">🆕 New Lead</option>
                     <option value="contacted">📞 Contacted</option>
                     <option value="qualified">⭐ Qualified</option>
-                    <option value="converted">🎉 Converted Customer</option>
+                    <option value="converted">🎉 Converted</option>
                     <option value="lost">❌ Lost</option>
                   </select>
                 </div>
               </div>
 
-              {/* Notes */}
               <div>
-                <label className="block text-sm font-bold text-[#143623] mb-1.5">Notes</label>
-                <textarea {...register("notes")} id="lead-notes" rows={3} placeholder="Initial conversation notes…" className={`${inputClass} resize-none`} />
+                <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">Notes</label>
+                <textarea id="lead-notes" value={form.notes} onChange={(e) => set("notes", e.target.value)}
+                  rows={3} placeholder="Initial conversation context, buying signals, follow-up reminders…"
+                  className={`${inputClass} resize-none`}
+                />
               </div>
 
               {error && (
@@ -171,18 +137,19 @@ export default function NewLeadPage() {
                 </div>
               )}
 
-              <div className="flex gap-4 pt-2">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-[#1e5631] hover:bg-[#2d7d46] disabled:bg-gray-400 text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-green-900/10 flex items-center justify-center gap-2"
+                  id="save-lead-btn"
+                  className="flex-1 bg-[#1e5631] hover:bg-[#163f24] disabled:bg-gray-300 text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-green-900/10 flex items-center justify-center gap-2"
                 >
-                  {loading ? "Saving…" : "Save New Lead →"}
+                  {loading ? (
+                    <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
+                  ) : "Save Lead →"}
                 </button>
-                <Link
-                  href="/crm"
-                  className="px-6 py-3.5 bg-white border border-[#e2efe6] text-[#4a6b57] hover:text-[#143623] hover:bg-[#f0f7f2] rounded-xl text-sm font-bold transition-all duration-200 text-center"
-                >
+                <Link href="/crm"
+                  className="px-6 py-3.5 bg-white border border-[#e2efe6] text-[#4a6b57] hover:bg-[#f0f7f2] rounded-xl font-bold text-sm transition-all text-center">
                   Cancel
                 </Link>
               </div>

@@ -9,38 +9,47 @@ export const metadata = { title: "Academy | Krave Admin" };
 const MODULES = [
   {
     id: "m1",
-    title: "Module 1: Microgreens Basics & Seed Selection",
+    number: "01",
+    title: "Microgreens Basics & Seed Selection",
+    description: "Non-GMO seed varieties, substrate selection, tray setup for home & commercial grow.",
     duration: "45 mins",
-    lessonsCount: 4,
-    status: "Published",
-    lessons: [
-      { id: "l1", title: "1.1 Introduction to Microgreens Farming", videoId: "dQw4w9WgXcQ" },
-      { id: "l2", title: "1.2 Choosing Non-GMO & Organic Seeds", videoId: "dQw4w9WgXcQ" },
-      { id: "l3", title: "1.3 Equipment & Tray Setup for Small Spaces", videoId: "dQw4w9WgXcQ" },
-    ],
+    lessons: 4,
+    status: "published" as const,
+    completions: 192,
+    color: "from-emerald-500 to-teal-600",
   },
   {
     id: "m2",
-    title: "Module 2: Growing, Harvesting & Yield Optimization",
-    duration: "60 mins",
-    lessonsCount: 5,
-    status: "Published",
-    lessons: [
-      { id: "l4", title: "2.1 Soil Substrate vs Hydroponic Mats", videoId: "dQw4w9WgXcQ" },
-      { id: "l5", title: "2.2 Watering Schedule & Mold Prevention", videoId: "dQw4w9WgXcQ" },
-      { id: "l6", title: "2.3 Harvesting Techniques for Maximum Shelf Life", videoId: "dQw4w9WgXcQ" },
-    ],
+    number: "02",
+    title: "Germination, Blackout & Moisture Control",
+    description: "Optimal watering schedules, mold prevention strategies, and ideal blackout periods.",
+    duration: "55 mins",
+    lessons: 5,
+    status: "published" as const,
+    completions: 148,
+    color: "from-green-600 to-emerald-700",
   },
   {
     id: "m3",
-    title: "Module 3: Commercial Packaging & Local Sales Strategy",
-    duration: "50 mins",
-    lessonsCount: 4,
-    status: "Draft",
-    lessons: [
-      { id: "l7", title: "3.1 Eco-Friendly Packaging & Branding", videoId: "dQw4w9WgXcQ" },
-      { id: "l8", title: "3.2 Selling to Restaurants & Direct Consumers", videoId: "dQw4w9WgXcQ" },
-    ],
+    number: "03",
+    title: "Harvesting, Packaging & Shelf Life",
+    description: "Harvesting clean sprouts, eco-packaging, refrigeration to maximise fresh shelf life.",
+    duration: "40 mins",
+    lessons: 4,
+    status: "published" as const,
+    completions: 112,
+    color: "from-lime-600 to-green-700",
+  },
+  {
+    id: "m4",
+    number: "04",
+    title: "Selling: Restaurants, D2C & Social Media",
+    description: "Pricing strategy, restaurant pitch scripts, Instagram marketing, and B2B sales.",
+    duration: "60 mins",
+    lessons: 6,
+    status: "draft" as const,
+    completions: 0,
+    color: "from-amber-500 to-orange-600",
   },
 ];
 
@@ -51,96 +60,113 @@ export default async function AcademyAdminPage() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
   );
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const published = MODULES.filter((m) => m.status === "published").length;
+  const totalLessons = MODULES.reduce((a, m) => a + m.lessons, 0);
 
   return (
     <div className="flex min-h-screen bg-[#f8faf5]">
       <Sidebar />
       <div className="flex-1 overflow-auto">
+
         {/* Header */}
         <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black text-[#143623]">Krave Academy</h1>
             <p className="text-[#4a6b57] text-sm mt-0.5 font-medium">
-              Manage online masterclass courses, video modules, and student certifications
+              Manage masterclass modules, video lessons & student completions
             </p>
           </div>
           <Link
-            href="/academy/new-lesson"
-            className="bg-[#1e5631] hover:bg-[#2d7d46] text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm flex items-center gap-1.5"
+            href="/academy/new"
+            className="inline-flex items-center gap-2 bg-[#1e5631] hover:bg-[#163f24] text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm shadow-green-900/20"
           >
-            + Add Lesson
+            + New Module
           </Link>
         </div>
 
         <div className="p-8 space-y-6">
-          {/* Top Banner Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-              <span className="text-[#4a6b57] text-xs font-bold uppercase tracking-wider">Active Course Modules</span>
-              <p className="text-3xl font-black text-[#143623] mt-2">3 Modules</p>
-              <p className="text-[#6b8e78] text-xs mt-1 font-medium">13 video lessons total</p>
-            </div>
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-              <span className="text-[#4a6b57] text-xs font-bold uppercase tracking-wider">Enrolled Students</span>
-              <p className="text-3xl font-black text-[#1e5631] mt-2">248 Students</p>
-              <p className="text-[#6b8e78] text-xs mt-1 font-medium">From 18 Indian cities</p>
-            </div>
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-              <span className="text-[#4a6b57] text-xs font-bold uppercase tracking-wider">Certificates Issued</span>
-              <p className="text-3xl font-black text-[#143623] mt-2">142 PDF Certificates</p>
-              <p className="text-[#6b8e78] text-xs mt-1 font-medium">Certified Organic Growers</p>
-            </div>
-          </div>
 
-          {/* Course Modules List */}
-          <div className="space-y-4">
-            <h2 className="text-[#143623] font-bold text-lg">Masterclass Modules & Video Content</h2>
-            {MODULES.map((mod) => (
-              <div key={mod.id} className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center justify-between border-b border-[#e2efe6] pb-4 mb-4">
-                  <div>
-                    <h3 className="text-lg font-black text-[#143623]">{mod.title}</h3>
-                    <p className="text-[#4a6b57] text-xs font-medium mt-0.5">
-                      {mod.duration} · {mod.lessonsCount} Video Lessons
-                    </p>
-                  </div>
-                  <span
-                    className={`px-3.5 py-1 rounded-full text-xs font-bold ${
-                      mod.status === "Published"
-                        ? "bg-green-100 text-green-800 border border-green-200"
-                        : "bg-amber-50 text-amber-800 border border-amber-200"
-                    }`}
-                  >
-                    {mod.status}
-                  </span>
+          {/* ── KPIs ── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: "Course Modules",     value: MODULES.length,   icon: "📚", sub: `${published} published` },
+              { label: "Total Lessons",      value: totalLessons,      icon: "▶️", sub: "Video lessons" },
+              { label: "Enrolled Students",  value: 312,               icon: "👩‍🎓", sub: "Across all modules" },
+              { label: "Certificates Issued",value: 186,               icon: "📜", sub: "Certified Growers" },
+            ].map((k) => (
+              <div key={k.label} className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#6b8e78] text-[11px] font-bold uppercase tracking-wider">{k.label}</span>
+                  <span className="text-xl">{k.icon}</span>
                 </div>
-
-                <div className="space-y-2.5">
-                  {mod.lessons.map((les) => (
-                    <div
-                      key={les.id}
-                      className="flex items-center justify-between p-3.5 bg-[#f8faf5] border border-[#e2efe6] rounded-xl hover:border-[#b8dbc3] transition-all"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-[#1e5631] font-bold text-base">▶</span>
-                        <span className="text-[#143623] font-bold text-sm">{les.title}</span>
-                      </div>
-                      <a
-                        href={`https://youtube.com/watch?v=${les.videoId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#1e5631] font-bold text-xs hover:underline"
-                      >
-                        Preview Video ↗
-                      </a>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-3xl font-black text-[#143623]">{k.value}</p>
+                <p className="text-[#6b8e78] text-xs font-medium">{k.sub}</p>
               </div>
             ))}
+          </div>
+
+          {/* ── Modules Grid ── */}
+          <div>
+            <h2 className="text-[#143623] font-bold text-lg mb-4">Course Modules</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {MODULES.map((mod) => (
+                <div key={mod.id} className="bg-white border border-[#e2efe6] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  {/* Coloured header band */}
+                  <div className={`bg-gradient-to-r ${mod.color} px-6 py-4 flex items-center justify-between`}>
+                    <span className="text-white/80 text-5xl font-black leading-none opacity-30">{mod.number}</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      mod.status === "published"
+                        ? "bg-white/20 text-white border border-white/30"
+                        : "bg-amber-100 text-amber-800 border border-amber-200"
+                    }`}>
+                      {mod.status === "published" ? "✓ Published" : "✎ Draft"}
+                    </span>
+                  </div>
+                  <div className="p-5 space-y-3">
+                    <div>
+                      <h3 className="text-[#143623] font-black text-base leading-snug">{mod.title}</h3>
+                      <p className="text-[#4a6b57] text-xs font-medium mt-1 leading-relaxed">{mod.description}</p>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-[#6b8e78] font-semibold pt-1">
+                      <span>⏱ {mod.duration}</span>
+                      <span>▶ {mod.lessons} Lessons</span>
+                      {mod.completions > 0 && <span>✓ {mod.completions} Completions</span>}
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-[#f0f7f2]">
+                      {mod.completions > 0 && (
+                        <div className="flex-1 mr-4">
+                          <div className="flex justify-between text-[10px] font-bold text-[#6b8e78] mb-1">
+                            <span>Student Completions</span>
+                            <span>{mod.completions}</span>
+                          </div>
+                          <div className="w-full bg-[#edf6f0] h-1.5 rounded-full">
+                            <div
+                              className="h-full bg-[#1e5631] rounded-full"
+                              style={{ width: `${Math.min(100, Math.round((mod.completions / 312) * 100))}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex gap-2 ml-auto">
+                        <button type="button" className="text-xs font-bold text-[#4a6b57] hover:text-[#143623] px-3 py-1.5 bg-[#f8faf5] border border-[#e2efe6] rounded-lg transition-all">
+                          Edit
+                        </button>
+                        <button type="button" className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all ${
+                          mod.status === "draft"
+                            ? "bg-[#1e5631] text-white hover:bg-[#163f24]"
+                            : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+                        }`}>
+                          {mod.status === "draft" ? "Publish" : "Unpublish"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -2,8 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { WEBINAR, SPEAKER } from "../content";
 import { Countdown } from "./countdown";
+import { WebinarData } from "../lib/get-webinar";
 
-export function FooterCta() {
+export function FooterCta({ webinar }: { webinar?: WebinarData }) {
+  const data = webinar ?? { ...WEBINAR, speakerName: SPEAKER.name };
+
   return (
     <section className="py-24 bg-gradient-to-b from-[#edf6f0] via-[#f7fbf8] to-white relative overflow-hidden border-t border-[#e2efe6]">
       {/* Decoration */}
@@ -15,7 +18,7 @@ export function FooterCta() {
       <div className="relative max-w-3xl mx-auto px-4 text-center">
         {/* Urgency badge */}
         <div className="inline-flex items-center gap-2 bg-red-50 border border-red-200 rounded-full px-4 py-1.5 mb-6">
-          <span className="text-red-700 text-sm font-bold">⚡ LIMITED SEATS — Only {WEBINAR.maxSeats} spots available</span>
+          <span className="text-red-700 text-sm font-bold">⚡ LIMITED SEATS — Only {data.maxSeats} spots available</span>
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-black text-[#143623] mb-4">
@@ -23,12 +26,12 @@ export function FooterCta() {
         </h2>
 
         <p className="text-[#4a6b57] text-lg mb-8 max-w-xl mx-auto font-medium">
-          Join {SPEAKER.name} live on <strong className="text-[#143623] font-bold">{WEBINAR.date}</strong> at <strong className="text-[#143623] font-bold">{WEBINAR.time}</strong> and get your personal roadmap to a microgreens business.
+          Join {data.speakerName} live on <strong className="text-[#143623] font-bold">{data.date}</strong> at <strong className="text-[#143623] font-bold">{data.time}</strong> and get your personal roadmap to a microgreens business.
         </p>
 
         {/* Countdown */}
         <div className="mb-10">
-          <Countdown targetISO={WEBINAR.dateISO} />
+          <Countdown targetISO={data.dateISO} />
         </div>
 
         <Link

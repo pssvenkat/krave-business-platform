@@ -1,8 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { WEBINAR } from "../content";
+import { WebinarData } from "../lib/get-webinar";
 
-export function Navbar() {
+export function Navbar({ webinar }: { webinar?: WebinarData }) {
+  const data = webinar ?? WEBINAR;
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#e2efe6] bg-white/95 backdrop-blur-md shadow-sm">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -23,7 +26,7 @@ export function Navbar() {
         {/* Info chip */}
         <div className="hidden md:flex items-center gap-2 text-sm text-[#1e5631] font-semibold bg-[#edf6f0] px-3.5 py-1.5 rounded-full border border-[#d0e6d6]">
           <span>📅</span>
-          <span>{WEBINAR.date} · {WEBINAR.time}</span>
+          <span>{data.date} · {data.time}</span>
         </div>
 
         {/* CTA */}

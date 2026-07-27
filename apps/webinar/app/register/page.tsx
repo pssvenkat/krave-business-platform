@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { WEBINAR, SPEAKER } from "../content";
 import { Navbar } from "../components/navbar";
 import { RegistrationForm } from "../components/registration-form";
+import { getLatestWebinar } from "../lib/get-webinar";
 
-export const metadata: Metadata = {
-  title: `Register Free | ${WEBINAR.title}`,
-  description: `Reserve your free spot for the Krave Microgreens webinar with ${SPEAKER.name} on ${WEBINAR.date}.`,
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const webinar = await getLatestWebinar();
+  return {
+    title: `Register Free | ${webinar.title}`,
+    description: `Reserve your free spot for the Krave Microgreens webinar with ${webinar.speakerName} on ${webinar.date}.`,
+    robots: { index: true, follow: true },
+  };
+}
 
-const ACTIVE_WEBINAR_ID = process.env.NEXT_PUBLIC_ACTIVE_WEBINAR_ID ?? "placeholder";
+export default async function RegisterPage() {
+  const webinar = await getLatestWebinar();
 
-export default function RegisterPage() {
   return (
     <>
-      <Navbar />
+      <Navbar webinar={webinar} />
       <main className="min-h-screen bg-gradient-to-b from-[#edf6f0] via-[#f7fbf8] to-white pt-16">
         <div className="max-w-6xl mx-auto px-4 py-12 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -26,21 +29,21 @@ export default function RegisterPage() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-700" />
                 </span>
                 <span className="text-[#1e5631] text-sm font-bold">
-                  FREE LIVE WEBINAR · {WEBINAR.date}
+                  FREE LIVE WEBINAR · {webinar.date}
                 </span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-black mb-4 leading-tight text-[#143623]">
-                {WEBINAR.title}
+                {webinar.title}
               </h1>
 
-              <p className="text-[#2d7d46] text-lg font-semibold mb-8">{WEBINAR.subtitle}</p>
+              <p className="text-[#2d7d46] text-lg font-semibold mb-8">{webinar.subtitle}</p>
 
               <div className="space-y-4 mb-8">
                 {[
-                  { icon: "🗓️", text: `${WEBINAR.date} · ${WEBINAR.time}` },
-                  { icon: "⏱️", text: `Duration: ${WEBINAR.duration}` },
-                  { icon: "🎙️", text: `Trainer: ${SPEAKER.name}` },
+                  { icon: "🗓️", text: `${webinar.date} · ${webinar.time}` },
+                  { icon: "⏱️", text: `Duration: ${webinar.duration}` },
+                  { icon: "🎙️", text: `Trainer: ${webinar.speakerName}` },
                   { icon: "💻", text: "Online · YouTube Live" },
                   { icon: "💯", text: "100% Free — No payment required" },
                 ].map((item, i) => (
@@ -82,7 +85,7 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              <RegistrationForm webinarId={ACTIVE_WEBINAR_ID} />
+              <RegistrationForm webinarId={webinar.id} />
             </div>
           </div>
         </div>

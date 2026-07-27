@@ -19,7 +19,7 @@ async function getWebinars() {
 
   const { data: webinars } = await supabase
     .from("webinars")
-    .select("id, title, scheduled_at, status, max_seats, is_published")
+    .select("id, title, scheduled_at, status, max_seats")
     .order("scheduled_at", { ascending: false });
 
   // Count registrations per webinar
@@ -37,71 +37,68 @@ async function getWebinars() {
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    draft: "bg-gray-500/20 text-gray-400",
-    published: "bg-blue-500/20 text-blue-400",
-    live: "bg-red-500/20 text-red-400",
-    ended: "bg-green-500/20 text-green-400",
-    cancelled: "bg-orange-500/20 text-orange-400",
+    draft: "bg-gray-100 text-gray-700 border border-gray-200",
+    published: "bg-blue-50 text-blue-700 border border-blue-200",
+    live: "bg-red-50 text-red-700 border border-red-200",
+    ended: "bg-green-100 text-green-800 border border-green-200",
+    cancelled: "bg-orange-50 text-orange-700 border border-orange-200",
   };
-  return map[status] ?? "bg-gray-500/20 text-gray-400";
+  return map[status] ?? "bg-gray-100 text-gray-700 border border-gray-200";
 }
 
 export default async function WebinarsPage() {
   const { webinars, countMap } = await getWebinars();
 
   return (
-    <div className="flex min-h-screen bg-[#080f0b]">
+    <div className="flex min-h-screen bg-[#f8faf5]">
       <Sidebar />
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-black text-white">Webinars</h1>
-            <p className="text-gray-500 text-sm mt-0.5">Manage your webinar events</p>
+            <h1 className="text-2xl font-black text-[#143623]">Webinars</h1>
+            <p className="text-[#4a6b57] text-sm mt-0.5 font-medium">Manage your webinar events and streams</p>
           </div>
           <Link
             href="/webinars/new"
-            className="bg-green-600 hover:bg-green-500 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200"
+            className="bg-[#1e5631] hover:bg-[#2d7d46] text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm flex items-center gap-1.5"
           >
             + New Webinar
           </Link>
         </div>
 
-        <div className="p-6">
+        <div className="p-8">
           {webinars.length === 0 ? (
-            <div className="text-center py-20">
+            <div className="text-center py-20 bg-white border border-[#e2efe6] rounded-2xl p-8 shadow-sm">
               <div className="text-5xl mb-4">🎙️</div>
-              <h2 className="text-white font-bold text-xl mb-2">No webinars yet</h2>
-              <p className="text-gray-500 mb-6">Create your first webinar to get started.</p>
+              <h2 className="text-[#143623] font-black text-xl mb-2">No webinars yet</h2>
+              <p className="text-[#4a6b57] text-sm mb-6">Create your first webinar to get started.</p>
               <Link
                 href="/webinars/new"
-                className="bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200"
+                className="bg-[#1e5631] hover:bg-[#2d7d46] text-white font-bold px-6 py-3 rounded-xl transition-all duration-200 inline-block shadow-sm"
               >
                 Create Webinar →
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {webinars.map((w: Record<string, unknown>) => (
                 <Link
                   key={w.id as string}
                   href={`/webinars/${w.id}`}
-                  className="block bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/8 hover:border-green-500/30 transition-all duration-200 group"
+                  className="block bg-white border border-[#e2efe6] rounded-2xl p-6 hover:border-[#1e5631] hover:shadow-md transition-all duration-200 group shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusBadge(w.status as string)}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`inline-block px-3 py-0.5 rounded-full text-xs font-bold capitalize ${statusBadge(w.status as string)}`}>
                           {w.status as string}
                         </span>
-                        {!w.is_published && (
-                          <span className="text-gray-500 text-xs">· Draft</span>
-                        )}
                       </div>
-                      <h3 className="text-white font-bold text-base group-hover:text-green-300 transition-colors">
+                      <h3 className="text-[#143623] font-black text-lg group-hover:text-[#1e5631] transition-colors">
                         {w.title as string}
                       </h3>
-                      <p className="text-gray-500 text-sm mt-1">
+                      <p className="text-[#4a6b57] text-sm mt-1 font-medium">
                         {new Date(w.scheduled_at as string).toLocaleDateString("en-IN", {
                           weekday: "long",
                           day: "numeric",
@@ -112,12 +109,12 @@ export default async function WebinarsPage() {
                         })}
                       </p>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-2xl font-black text-white">
+                    <div className="text-right flex-shrink-0 bg-[#f8faf5] border border-[#e2efe6] px-4 py-2.5 rounded-xl">
+                      <p className="text-2xl font-black text-[#143623]">
                         {countMap[w.id as string] ?? 0}
                       </p>
-                      <p className="text-gray-500 text-xs">
-                        / {w.max_seats as number} seats
+                      <p className="text-[#6b8e78] text-xs font-bold uppercase tracking-wider">
+                        / {w.max_seats as number ?? 500} seats
                       </p>
                     </div>
                   </div>

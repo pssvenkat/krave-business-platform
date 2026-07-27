@@ -30,13 +30,13 @@ async function getWebinarData(id: string) {
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    registered: "bg-blue-500/20 text-blue-400",
-    confirmed: "bg-green-500/20 text-green-400",
-    attended: "bg-emerald-500/20 text-emerald-400",
-    "no-show": "bg-red-500/20 text-red-400",
-    cancelled: "bg-gray-500/20 text-gray-400",
+    registered: "bg-blue-50 text-blue-700 border border-blue-200",
+    confirmed: "bg-green-100 text-green-800 border border-green-200",
+    attended: "bg-emerald-100 text-emerald-800 border border-emerald-200",
+    "no-show": "bg-red-50 text-red-700 border border-red-200",
+    cancelled: "bg-gray-100 text-gray-700 border border-gray-200",
   };
-  return map[status] ?? "bg-gray-500/20 text-gray-400";
+  return map[status] ?? "bg-gray-100 text-gray-700 border border-gray-200";
 }
 
 interface Props { params: Promise<{ id: string }> }
@@ -46,20 +46,20 @@ export default async function WebinarDetailPage({ params }: Props) {
   const { webinar, registrations, count } = await getWebinarData(id);
 
   return (
-    <div className="flex min-h-screen bg-[#080f0b]">
+    <div className="flex min-h-screen bg-[#f8faf5]">
       <Sidebar />
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <div className="border-b border-white/10 px-6 py-4 flex items-center gap-4">
-          <Link href="/webinars" className="text-gray-500 hover:text-white text-sm transition-colors">
-            ← Webinars
+        <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex items-center gap-4">
+          <Link href="/webinars" className="text-[#4a6b57] hover:text-[#143623] font-semibold text-sm transition-colors">
+            ← Back to Webinars
           </Link>
           <div className="flex-1">
-            <h1 className="text-lg font-black text-white leading-tight">{webinar.title}</h1>
+            <h1 className="text-xl font-black text-[#143623] leading-tight">{webinar.title}</h1>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-8 space-y-6">
           {/* Webinar info */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
@@ -70,23 +70,23 @@ export default async function WebinarDetailPage({ params }: Props) {
                   day: "numeric", month: "short", year: "numeric",
                 }),
               },
-              { label: "Registrations", value: `${count} / ${webinar.max_seats}` },
+              { label: "Registrations", value: `${count} / ${webinar.max_seats ?? 500}` },
               { label: "Duration", value: `${webinar.duration_minutes} min` },
             ].map((item) => (
-              <div key={item.label} className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <p className="text-gray-500 text-xs mb-1">{item.label}</p>
-                <p className="text-white font-bold capitalize">{item.value}</p>
+              <div key={item.label} className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm">
+                <p className="text-[#4a6b57] text-xs font-bold uppercase tracking-wider mb-1">{item.label}</p>
+                <p className="text-[#143623] font-black text-lg capitalize">{item.value}</p>
               </div>
             ))}
           </div>
 
           {/* Registrations table */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-              <h2 className="text-white font-bold">Registrations ({count})</h2>
+          <div className="bg-white border border-[#e2efe6] rounded-2xl overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2efe6] bg-[#f8faf5]/40">
+              <h2 className="text-[#143623] font-bold text-lg">Registrations ({count})</h2>
               <a
                 href={`/api/admin/webinars/${id}/export`}
-                className="text-green-400 text-sm hover:underline"
+                className="text-[#1e5631] font-bold text-sm hover:underline flex items-center gap-1"
               >
                 Export CSV ↓
               </a>
@@ -94,34 +94,34 @@ export default async function WebinarDetailPage({ params }: Props) {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/5">
+                  <tr className="border-b border-[#e2efe6] bg-[#f8faf5]/80">
                     {["Name", "Email", "City", "Source", "Status", "Registered"].map((h) => (
-                      <th key={h} className="text-left px-5 py-3 text-gray-500 font-medium text-xs uppercase tracking-wide">
+                      <th key={h} className="text-left px-6 py-3.5 text-[#4a6b57] font-bold text-xs uppercase tracking-wider">
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-[#e2efe6]/60">
                   {registrations.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-8 text-gray-600">
+                      <td colSpan={6} className="text-center py-10 text-[#6b8e78] font-medium">
                         No registrations yet for this webinar.
                       </td>
                     </tr>
                   ) : (
                     registrations.map((r: Record<string, string>) => (
-                      <tr key={r.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                        <td className="px-5 py-3 text-white font-medium">{r.first_name} {r.last_name}</td>
-                        <td className="px-5 py-3 text-gray-400 text-xs">{r.email}</td>
-                        <td className="px-5 py-3 text-gray-400">{r.city}</td>
-                        <td className="px-5 py-3 text-gray-400 capitalize">{r.lead_source}</td>
-                        <td className="px-5 py-3">
-                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusBadge(r.status ?? "registered")}`}>
+                      <tr key={r.id} className="hover:bg-[#f0f7f2]/50 transition-colors">
+                        <td className="px-6 py-4 text-[#143623] font-bold">{r.first_name} {r.last_name}</td>
+                        <td className="px-6 py-4 text-[#4a6b57] text-xs font-medium">{r.email}</td>
+                        <td className="px-6 py-4 text-[#4a6b57] font-medium">{r.city}</td>
+                        <td className="px-6 py-4 text-[#4a6b57] capitalize font-medium">{r.lead_source}</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${statusBadge(r.status ?? "registered")}`}>
                             {r.status ?? "registered"}
                           </span>
                         </td>
-                        <td className="px-5 py-3 text-gray-500 text-xs">
+                        <td className="px-6 py-4 text-[#6b8e78] text-xs font-medium">
                           {r.created_at ? new Date(r.created_at).toLocaleDateString("en-IN") : "—"}
                         </td>
                       </tr>

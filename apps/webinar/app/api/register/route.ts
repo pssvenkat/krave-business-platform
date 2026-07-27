@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
       phone,
       city,
       occupation,
-      instagram,
       leadSource,
       webinarId,
       turnstileToken,
@@ -84,7 +83,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Insert registration with valid schema fields (country & confirmed status)
+    // 5. Insert registration with valid schema fields matching Supabase registrations table
     const { data: registration, error: insertError } = await supabase
       .from("registrations")
       .insert({
@@ -98,7 +97,6 @@ export async function POST(request: NextRequest) {
         city,
         country: "India",
         occupation,
-        instagram_handle: instagram ?? null,
         lead_source: leadSource,
         status: "confirmed",
         ip_address: request.headers.get("x-forwarded-for") ?? null,

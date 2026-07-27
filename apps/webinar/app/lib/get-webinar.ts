@@ -17,9 +17,23 @@ export interface WebinarData {
   speakerName: string;
 }
 
+interface SupabaseWebinarRow {
+  id: string;
+  title: string;
+  description: string | null;
+  scheduled_at: string;
+  duration_minutes: number | null;
+  youtube_video_id: string | null;
+  whatsapp_community_url: string | null;
+  google_calendar_url: string | null;
+  registration_deadline: string | null;
+  max_registrations: number | null;
+  speaker_name: string | null;
+  status: string | null;
+}
+
 export async function getLatestWebinar(): Promise<WebinarData> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  // Use service role key if available server-side to bypass RLS, fallback to anon key
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (supabaseUrl && supabaseKey) {
@@ -29,20 +43,47 @@ export async function getLatestWebinar(): Promise<WebinarData> {
       });
       
       const activeId = process.env.NEXT_PUBLIC_ACTIVE_WEBINAR_ID;
-      
-      let query = supabase.from("webinars").select("*");
-      
-      if (activeId && activeId !== "placeholder") {
-        query = query.eq("id", activeId);
-      } else {
-        // Query published or latest webinar created in Supabase
-        query = query.order("created_at", { ascending: false }).limit(1);
+      let rows: SupabaseWebinarRow[] | null = null;
+
+      // 1. Try activeId if provided and valid
+      if (activeId && activeId !== "placeholder" && activeId.trim().length > 0) {
+        const { data: specificData } = await supabase
+          .from("webinars")
+          .select("*")
+          .eq("id", activeId.trim());
+        
+        if (specificData && specificData.length > 0) {
+          rows = specificData as SupabaseWebinarRow[];
+        }
       }
 
-      const { data, error } = await query;
+      // 2. If no valid activeId webinar found, fetch the latest published webinar
+      if (!rows || rows.length === 0) {
+        const { data: publishedData } = await supabase
+          .from("webinars")
+          .select("*")
+          .eq("status", "published")
+          .order("created_at", { ascending: false })
+          .limit(1);
 
-      if (!error && data && data.length > 0) {
-        const row = data[0];
+        if (publishedData && publishedData.length > 0) {
+          rows = publishedData as SupabaseWebinarRow[];
+        } else {
+          // 3. Fallback: fetch the latest webinar of any status
+          const { data: anyData } = await supabase
+            .from("webinars")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(1);
+          
+          if (anyData && anyData.length > 0) {
+            rows = anyData as SupabaseWebinarRow[];
+          }
+        }
+      }
+
+      const row = rows?.[0];
+      if (row) {
         const scheduledDate = new Date(row.scheduled_at);
         
         return {
@@ -63,8 +104,8 @@ export async function getLatestWebinar(): Promise<WebinarData> {
           speakerName: row.speaker_name || SPEAKER.name,
         };
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      console.error("Error fetching webinar from Supabase:", err);
     }
   }
 

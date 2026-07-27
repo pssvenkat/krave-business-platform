@@ -6,7 +6,6 @@ const TURNSTILE_VERIFY_URL =
 
 async function verifyTurnstile(token: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  // Skip verification if secret is not set, is dummy key, or bypass token used
   if (!secret || secret.startsWith("0x4AAAA") || token.startsWith("bypass")) return true;
 
   try {
@@ -85,7 +84,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Insert registration
+    // 5. Insert registration with valid schema fields (country & confirmed status)
     const { data: registration, error: insertError } = await supabase
       .from("registrations")
       .insert({
@@ -97,10 +96,11 @@ export async function POST(request: NextRequest) {
         phone: phone.trim(),
         phone_hash: hmacHash(`${phone.trim()}:${webinarId}`, hmacSecret),
         city,
+        country: "India",
         occupation,
         instagram_handle: instagram ?? null,
         lead_source: leadSource,
-        status: "registered",
+        status: "confirmed",
         ip_address: request.headers.get("x-forwarded-for") ?? null,
         user_agent: request.headers.get("user-agent") ?? null,
       })
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error("Registration insert error:", insertError);
       return NextResponse.json(
-        { error: "Registration failed. Please try again." },
+        { error: `Registration error: ${insertError.message}` },
         { status: 500 }
       );
     }
@@ -133,10 +133,10 @@ export async function POST(request: NextRequest) {
       .catch((err) => console.error("Email send error:", err));
 
     return NextResponse.json({ registrationId: registration.id }, { status: 200 });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Registration API error:", err);
     return NextResponse.json(
-      { error: "Unexpected error. Please try again." },
+      { error: err?.message || "Unexpected error. Please try again." },
       { status: 500 }
     );
   }

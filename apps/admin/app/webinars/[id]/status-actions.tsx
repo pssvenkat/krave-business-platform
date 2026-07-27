@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 
 interface Props {
@@ -35,6 +36,14 @@ export function StatusActions({ webinarId, currentStatus }: Props) {
 
   return (
     <div className="flex items-center gap-2">
+      {/* Edit button */}
+      <Link
+        href={`/webinars/${webinarId}/edit`}
+        className="bg-white border border-[#d0e6d6] hover:bg-[#edf6f0] text-[#1e5631] font-bold text-sm px-4 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5"
+      >
+        ✏️ Edit Webinar
+      </Link>
+
       {status === "draft" && (
         <button
           onClick={() => updateStatus("published")}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { WEBINAR, SPEAKER } from "../content";
 import { Countdown } from "./countdown";
 
@@ -43,20 +44,36 @@ export function FooterCta() {
         </p>
 
         {/* Footer links */}
-        <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap justify-center gap-6 text-green-400/50 text-xs">
-          <a href="https://kravemicrogreens.in" target="_blank" rel="noopener noreferrer" className="hover:text-green-300 transition-colors">
-            kravemicrogreens.in
-          </a>
-          <span>·</span>
-          <a href="https://kravemicrogreens.in/privacy" className="hover:text-green-300 transition-colors">
-            Privacy Policy
-          </a>
-          <span>·</span>
-          <a href="https://kravemicrogreens.in/terms" className="hover:text-green-300 transition-colors">
-            Terms
-          </a>
-          <span>·</span>
-          <span>© {new Date().getFullYear()} Krave Microgreens</span>
+        <div className="mt-16 pt-8 border-t border-white/10">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <a href="https://kravemicrogreens.in" target="_blank" rel="noopener noreferrer">
+              <div className="bg-white rounded-xl px-4 py-2 shadow-md inline-flex items-center">
+                <Image
+                  src="/logo.jpg"
+                  alt="Krave Microgreens"
+                  width={120}
+                  height={48}
+                  className="h-10 w-auto object-contain"
+                />
+              </div>
+            </a>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6 text-green-400/50 text-xs">
+            <a href="https://kravemicrogreens.in" target="_blank" rel="noopener noreferrer" className="hover:text-green-300 transition-colors">
+              kravemicrogreens.in
+            </a>
+            <span>·</span>
+            <a href="https://kravemicrogreens.in/privacy" className="hover:text-green-300 transition-colors">
+              Privacy Policy
+            </a>
+            <span>·</span>
+            <a href="https://kravemicrogreens.in/terms" className="hover:text-green-300 transition-colors">
+              Terms
+            </a>
+            <span>·</span>
+            <span>© {new Date().getFullYear()} Krave Microgreens</span>
+          </div>
         </div>
       </div>
     </section>

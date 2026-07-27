@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* ─── Krave Brand Color Palette Override ─────────────────────────────────────
+   Override Tailwind's default green palette with Krave logo brand colors:
+   - Light leaf green: #6CC24A  (bright leaf)
+   - Primary brand green: #2D7D46 (Krave text + dark leaf)
+   ──────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --color-green-50:  #f2faf4;
+  --color-green-100: #d6f0de;
+  --color-green-200: #ade1bf;
+  --color-green-300: #79cc97;
+  --color-green-400: #6CC24A;
+  --color-green-500: #4DA83C;
+  --color-green-600: #2D7D46;
+  --color-green-700: #1E5C32;
+  --color-green-800: #133D21;
+  --color-green-900: #0A2515;
+  --color-green-950: #05120A;
+}
+
 /* ─── Tailwind v4: Map CSS Variables → Theme Tokens ─────────────────────────
    @theme inline tells Tailwind v4 to expose CSS custom properties as utilities.
    This is what makes `bg-background`, `text-foreground`, `border-border`, etc. work.
@@ -77,8 +96,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 150 30% 10%;
 
-    /* Primary – Krave Green */
-    --primary: 142 76% 36%;
+    /* Primary – Krave Brand Green (#2D7D46) */
+    --primary: 139 47% 33%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary */
@@ -100,7 +119,7 @@
     /* Border & Ring */
     --border: 150 10% 88%;
     --input: 150 10% 88%;
-    --ring: 142 76% 36%;
+    --ring: 139 47% 33%;
 
     /* Border Radius */
     --radius: 0.5rem;
@@ -117,7 +136,7 @@
     --popover: 150 25% 9%;
     --popover-foreground: 150 10% 95%;
 
-    --primary: 142 76% 46%;
+    --primary: 103 43% 52%;
     --primary-foreground: 150 30% 6%;
 
     --secondary: 150 20% 15%;
@@ -134,7 +153,7 @@
 
     --border: 150 20% 18%;
     --input: 150 20% 18%;
-    --ring: 142 76% 46%;
+    --ring: 103 43% 52%;
   }
 }
 
@@ -190,8 +209,8 @@
 }
 
 @keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  50%       { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 125, 70, 0.45); }
+  50%       { box-shadow: 0 0 0 8px rgba(45, 125, 70, 0); }
 }
 
 /* ─── Custom Utilities ───────────────────────────────────────────────────────  */
@@ -211,18 +230,18 @@
 }
 
 @utility gradient-text {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
+  background: linear-gradient(135deg, #6CC24A 0%, #2D7D46 60%, #1E5C32 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 @utility krave-gradient {
-  background: linear-gradient(135deg, #1a3c2e 0%, #14532d 50%, #052e16 100%);
+  background: linear-gradient(160deg, #0d2b1a 0%, #163d26 40%, #0a2015 100%);
 }
 
 @utility animated-gradient {
-  background: linear-gradient(270deg, #22c55e, #16a34a, #15803d, #14532d);
+  background: linear-gradient(270deg, #6CC24A, #2D7D46, #1E5C32, #0d2b1a);
   background-size: 400% 400%;
   animation: gradient-shift 8s ease infinite;
 }

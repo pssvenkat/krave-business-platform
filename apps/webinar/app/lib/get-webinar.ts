@@ -15,8 +15,10 @@ export interface WebinarData {
   registrationDeadline: string;
   maxSeats: number;
   speakerName: string;
+  speakerTitle: string;
   speakerBio: string;
   speakerImageUrl: string;
+  speakerCredentials: string[];
 }
 
 interface SupabaseWebinarRow {
@@ -33,7 +35,17 @@ interface SupabaseWebinarRow {
   speaker_name: string | null;
   speaker_bio: string | null;
   speaker_image_url: string | null;
+  trainer_id: string | null;
   status: string | null;
+}
+
+interface SupabaseTrainerRow {
+  id: string;
+  name: string;
+  title: string | null;
+  bio: string | null;
+  image_url: string | null;
+  credentials: string[] | null;
 }
 
 export async function getLatestWebinar(): Promise<WebinarData> {
@@ -89,6 +101,18 @@ export async function getLatestWebinar(): Promise<WebinarData> {
       const row = rows?.[0];
       if (row) {
         const scheduledDate = new Date(row.scheduled_at);
+        let trainer: SupabaseTrainerRow | null = null;
+
+        if (row.trainer_id) {
+          const { data: trainerData } = await supabase
+            .from("trainers")
+            .select("*")
+            .eq("id", row.trainer_id)
+            .single();
+          if (trainerData) {
+            trainer = trainerData as SupabaseTrainerRow;
+          }
+        }
         
         return {
           id: row.id,
@@ -105,9 +129,11 @@ export async function getLatestWebinar(): Promise<WebinarData> {
             ? new Date(row.registration_deadline).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
             : WEBINAR.registrationDeadline,
           maxSeats: row.max_registrations || 500,
-          speakerName: row.speaker_name || SPEAKER.name,
-          speakerBio: row.speaker_bio || SPEAKER.bio,
-          speakerImageUrl: row.speaker_image_url || SPEAKER.imageUrl,
+          speakerName: trainer?.name || row.speaker_name || SPEAKER.name,
+          speakerTitle: trainer?.title || SPEAKER.title,
+          speakerBio: trainer?.bio || row.speaker_bio || SPEAKER.bio,
+          speakerImageUrl: trainer?.image_url || row.speaker_image_url || SPEAKER.imageUrl,
+          speakerCredentials: trainer?.credentials || SPEAKER.credentials,
         };
       }
     } catch (err) {
@@ -119,7 +145,9 @@ export async function getLatestWebinar(): Promise<WebinarData> {
     id: process.env.NEXT_PUBLIC_ACTIVE_WEBINAR_ID ?? "placeholder",
     ...WEBINAR,
     speakerName: SPEAKER.name,
+    speakerTitle: SPEAKER.title,
     speakerBio: SPEAKER.bio,
     speakerImageUrl: SPEAKER.imageUrl,
+    speakerCredentials: SPEAKER.credentials,
   };
 }

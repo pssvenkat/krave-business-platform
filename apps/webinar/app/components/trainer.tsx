@@ -4,7 +4,9 @@ import { WebinarData } from "../lib/get-webinar";
 
 export function Trainer({ webinar }: { webinar?: WebinarData }) {
   const name = webinar?.speakerName || SPEAKER.name;
+  const title = webinar?.speakerTitle || SPEAKER.title;
   const bio = webinar?.speakerBio || SPEAKER.bio;
+  const credentials = webinar?.speakerCredentials || SPEAKER.credentials;
   let imageUrl = webinar?.speakerImageUrl || SPEAKER.imageUrl;
 
   // Auto-normalize URLs like "/trainer" or "trainer" to "/trainer.jpg"
@@ -54,23 +56,25 @@ export function Trainer({ webinar }: { webinar?: WebinarData }) {
           {/* Info */}
           <div>
             <h3 className="text-3xl font-black text-[#143623] mb-1">{name}</h3>
-            <p className="text-[#2d7d46] font-bold text-lg mb-4">{SPEAKER.title}</p>
+            <p className="text-[#2d7d46] font-bold text-lg mb-4">{title}</p>
             <p className="text-[#4a6b57] text-base leading-relaxed mb-8 font-medium">
               {bio}
             </p>
 
             {/* Credential chips */}
-            <div className="flex flex-wrap gap-3">
-              {SPEAKER.credentials.map((c, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 bg-[#f0f7f2] border border-[#d0e6d6] rounded-xl px-4 py-2.5"
-                >
-                  <span className="text-[#1e5631] font-bold">✓</span>
-                  <span className="text-[#143623] text-sm font-semibold">{c}</span>
-                </div>
-              ))}
-            </div>
+            {credentials && credentials.length > 0 && (
+              <div className="flex flex-wrap gap-3">
+                {credentials.map((c, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 bg-[#f0f7f2] border border-[#d0e6d6] rounded-xl px-4 py-2.5"
+                  >
+                    <span className="text-[#1e5631] font-bold">✓</span>
+                    <span className="text-[#143623] text-sm font-semibold">{c}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ import { Sidebar } from "../../../components/sidebar";
 const schema = z.object({
   title: z.string().min(5, "Title is required"),
   description: z.string().optional(),
+  trainerId: z.string().optional(),
   scheduledAt: z.string().min(1, "Scheduled date/time is required"),
   durationMinutes: z.coerce.number().min(15).max(480),
   maxSeats: z.coerce.number().min(1).max(100000),
@@ -56,6 +57,14 @@ function isoToDatetimeLocalIST(isoString?: string | null) {
   }
 }
 
+interface TrainerProfile {
+  id: string;
+  name: string;
+  title?: string;
+  bio?: string;
+  image_url?: string;
+}
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -66,25 +75,29 @@ export default function EditWebinarPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [trainers, setTrainers] = useState<TrainerProfile[]>([]);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
   useEffect(() => {
-    async function loadWebinar() {
+    async function loadData() {
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
 
-      const { data: webinar, error: fetchErr } = await supabase
-        .from("webinars")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const [{ data: webinar }, { data: trainersData }] = await Promise.all([
+        supabase.from("webinars").select("*").eq("id", id).single(),
+        supabase.from("trainers").select("id, name, title, bio, image_url"),
+      ]);
 
-      if (fetchErr || !webinar) {
+      if (trainersData && trainersData.length > 0) {
+        setTrainers(trainersData);
+      }
+
+      if (!webinar) {
         setError("Failed to load webinar details.");
         setFetching(false);
         return;
@@ -93,6 +106,7 @@ export default function EditWebinarPage({ params }: PageProps) {
       reset({
         title: webinar.title,
         description: webinar.description ?? "",
+        trainerId: webinar.trainer_id ?? "",
         speakerName: webinar.speaker_name ?? "",
         speakerBio: webinar.speaker_bio ?? "",
         speakerImageUrl: webinar.speaker_image_url ?? "",
@@ -107,8 +121,20 @@ export default function EditWebinarPage({ params }: PageProps) {
       setFetching(false);
     }
 
-    loadWebinar();
+    loadData();
   }, [id, reset]);
+
+  const handleTrainerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    setValue("trainerId", selectedId);
+
+    const found = trainers.find((t) => t.id === selectedId);
+    if (found) {
+      setValue("speakerName", found.name);
+      if (found.bio) setValue("speakerBio", found.bio);
+      if (found.image_url) setValue("speakerImageUrl", found.image_url);
+    }
+  };
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -124,22 +150,28 @@ export default function EditWebinarPage({ params }: PageProps) {
       ? new Date(`${data.registrationDeadline}:00+05:30`).toISOString()
       : null;
 
+    const payload: Record<string, any> = {
+      title: data.title,
+      description: data.description ?? "",
+      speaker_name: data.speakerName || "Shanthi Ramakrishnamurthy",
+      speaker_bio: data.speakerBio ?? null,
+      speaker_image_url: data.speakerImageUrl ?? null,
+      scheduled_at: scheduledAtIST,
+      duration_minutes: data.durationMinutes,
+      max_registrations: data.maxSeats,
+      youtube_video_id: data.youtubeVideoId ?? null,
+      registration_deadline: deadlineIST,
+      status: data.status,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.trainerId && data.trainerId.length > 0) {
+      payload.trainer_id = data.trainerId;
+    }
+
     const { error: updateError } = await supabase
       .from("webinars")
-      .update({
-        title: data.title,
-        description: data.description ?? "",
-        speaker_name: data.speakerName || "Venkat Srinivasan",
-        speaker_bio: data.speakerBio ?? null,
-        speaker_image_url: data.speakerImageUrl ?? null,
-        scheduled_at: scheduledAtIST,
-        duration_minutes: data.durationMinutes,
-        max_registrations: data.maxSeats,
-        youtube_video_id: data.youtubeVideoId ?? null,
-        registration_deadline: deadlineIST,
-        status: data.status,
-        updated_at: new Date().toISOString(),
-      })
+      .update(payload)
       .eq("id", id);
 
     if (updateError) {
@@ -205,9 +237,32 @@ export default function EditWebinarPage({ params }: PageProps) {
                 />
               </div>
 
-              {/* Speaker Info */}
+              {/* Trainer Profile Selector */}
               <div className="border-t border-[#e2efe6] pt-5">
-                <h2 className="text-[#143623] font-extrabold text-base mb-4">Speaker / Trainer Details</h2>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-[#143623] font-extrabold text-base">Select Trainer Profile</h2>
+                  <Link href="/trainers/new" className="text-[#1e5631] font-bold text-xs hover:underline">
+                    + Add New Trainer
+                  </Link>
+                </div>
+                
+                {trainers.length > 0 && (
+                  <div className="mb-4">
+                    <select
+                      onChange={handleTrainerSelect}
+                      className={inputClass}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>-- Select a Trainer Profile to Auto-Fill --</option>
+                      {trainers.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          👨‍🏫 {t.name} ({t.title || "Trainer"})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-4">
                   <div>
                     <label className="block text-sm font-bold text-[#143623] mb-1.5">Speaker Name</label>

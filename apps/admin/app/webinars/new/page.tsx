@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { Sidebar } from "../../components/sidebar";
 const schema = z.object({
   title: z.string().min(5, "Title is required"),
   description: z.string().optional(),
+  trainerId: z.string().optional(),
   scheduledAt: z.string().min(1, "Scheduled date/time is required"),
   durationMinutes: z.coerce.number().min(15).max(480),
   maxSeats: z.coerce.number().min(1).max(100000),
@@ -28,15 +29,58 @@ type FormData = z.infer<typeof schema>;
 const inputClass =
   "w-full px-4 py-3 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all shadow-xs";
 
+interface TrainerProfile {
+  id: string;
+  name: string;
+  title?: string;
+  bio?: string;
+  image_url?: string;
+}
+
 export default function NewWebinarPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [trainers, setTrainers] = useState<TrainerProfile[]>([]);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { durationMinutes: 90, maxSeats: 500, speakerName: "Venkat Srinivasan", status: "published" },
+    defaultValues: {
+      durationMinutes: 90,
+      maxSeats: 500,
+      speakerName: "Shanthi Ramakrishnamurthy",
+      speakerImageUrl: "/trainer.jpg",
+      status: "published",
+    },
   });
+
+  useEffect(() => {
+    async function loadTrainers() {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { data } = await supabase.from("trainers").select("id, name, title, bio, image_url");
+      if (data && data.length > 0) {
+        setTrainers(data);
+      }
+    }
+
+    loadTrainers();
+  }, []);
+
+  const handleTrainerSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    setValue("trainerId", selectedId);
+
+    const found = trainers.find((t) => t.id === selectedId);
+    if (found) {
+      setValue("speakerName", found.name);
+      if (found.bio) setValue("speakerBio", found.bio);
+      if (found.image_url) setValue("speakerImageUrl", found.image_url);
+    }
+  };
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -65,28 +109,33 @@ export default function NewWebinarPage() {
       { onConflict: "id" }
     );
 
-    // Convert datetime-local input (intended as IST +05:30) explicitly to ISO string
     const scheduledAtIST = new Date(`${data.scheduledAt}:00+05:30`).toISOString();
     const deadlineIST = data.registrationDeadline
       ? new Date(`${data.registrationDeadline}:00+05:30`).toISOString()
       : null;
 
+    const payload: Record<string, any> = {
+      title: data.title,
+      description: data.description ?? "",
+      speaker_name: data.speakerName || "Shanthi Ramakrishnamurthy",
+      speaker_bio: data.speakerBio ?? null,
+      speaker_image_url: data.speakerImageUrl ?? null,
+      scheduled_at: scheduledAtIST,
+      duration_minutes: data.durationMinutes,
+      max_registrations: data.maxSeats,
+      youtube_video_id: data.youtubeVideoId ?? null,
+      registration_deadline: deadlineIST,
+      status: data.status,
+      created_by: user.id,
+    };
+
+    if (data.trainerId && data.trainerId.length > 0) {
+      payload.trainer_id = data.trainerId;
+    }
+
     const { error: insertError, data: webinar } = await supabase
       .from("webinars")
-      .insert({
-        title: data.title,
-        description: data.description ?? "",
-        speaker_name: data.speakerName || "Venkat Srinivasan",
-        speaker_bio: data.speakerBio ?? null,
-        speaker_image_url: data.speakerImageUrl ?? null,
-        scheduled_at: scheduledAtIST,
-        duration_minutes: data.durationMinutes,
-        max_registrations: data.maxSeats,
-        youtube_video_id: data.youtubeVideoId ?? null,
-        registration_deadline: deadlineIST,
-        status: data.status,
-        created_by: user.id,
-      })
+      .insert(payload)
       .select("id")
       .single();
 
@@ -140,16 +189,39 @@ export default function NewWebinarPage() {
                 />
               </div>
 
-              {/* Speaker Info */}
+              {/* Trainer Profile Selector */}
               <div className="border-t border-[#e2efe6] pt-5">
-                <h2 className="text-[#143623] font-extrabold text-base mb-4">Speaker / Trainer Details</h2>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-[#143623] font-extrabold text-base">Select Trainer Profile</h2>
+                  <Link href="/trainers/new" className="text-[#1e5631] font-bold text-xs hover:underline">
+                    + Add New Trainer
+                  </Link>
+                </div>
+                
+                {trainers.length > 0 && (
+                  <div className="mb-4">
+                    <select
+                      onChange={handleTrainerSelect}
+                      className={inputClass}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>-- Select a Trainer Profile to Auto-Fill --</option>
+                      {trainers.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          👨‍🏫 {t.name} ({t.title || "Trainer"})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-4">
                   <div>
                     <label className="block text-sm font-bold text-[#143623] mb-1.5">Speaker Name</label>
                     <input
                       {...register("speakerName")}
                       id="webinar-speaker"
-                      placeholder="Venkat Srinivasan"
+                      placeholder="Shanthi Ramakrishnamurthy"
                       className={inputClass}
                     />
                   </div>
@@ -158,7 +230,7 @@ export default function NewWebinarPage() {
                     <input
                       {...register("speakerImageUrl")}
                       id="webinar-speaker-photo"
-                      placeholder="https://example.com/photo.jpg or /trainer.jpg"
+                      placeholder="/trainer.jpg or https://example.com/photo.jpg"
                       className={inputClass}
                     />
                   </div>

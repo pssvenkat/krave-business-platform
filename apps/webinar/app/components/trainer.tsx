@@ -5,7 +5,15 @@ import { WebinarData } from "../lib/get-webinar";
 export function Trainer({ webinar }: { webinar?: WebinarData }) {
   const name = webinar?.speakerName || SPEAKER.name;
   const bio = webinar?.speakerBio || SPEAKER.bio;
-  const imageUrl = webinar?.speakerImageUrl || SPEAKER.imageUrl;
+  let imageUrl = webinar?.speakerImageUrl || SPEAKER.imageUrl;
+
+  // Auto-normalize URLs like "/trainer" or "trainer" to "/trainer.jpg"
+  if (imageUrl && !imageUrl.startsWith("http") && !imageUrl.includes(".")) {
+    const cleanPath = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+    imageUrl = `${cleanPath}.jpg`;
+  }
+
+  const isExternal = imageUrl?.startsWith("http");
 
   return (
     <section id="trainer" className="py-24 bg-[#f4f9f5] border-y border-[#e2efe6]">
@@ -35,6 +43,7 @@ export function Trainer({ webinar }: { webinar?: WebinarData }) {
                     src={imageUrl}
                     alt={name}
                     fill
+                    unoptimized={isExternal}
                     className="object-cover relative"
                   />
                 )}

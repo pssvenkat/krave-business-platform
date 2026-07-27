@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm turbo run build --filter=admin",
-  "outputDirectory": "apps/admin/.next",
+  "buildCommand": "pnpm turbo run build --filter=webinar",
+  "outputDirectory": "apps/webinar/.next",
   "installCommand": "pnpm install"
 }

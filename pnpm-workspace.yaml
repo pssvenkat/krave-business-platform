@@ -1,3 +1,16 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+allowBuilds:
+  core-js: true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+
+# Allow native build scripts for these packages (pnpm 10 security policy)
+onlyBuiltDependencies:
+  - core-js
+  - esbuild
+  - sharp
+  - unrs-resolver

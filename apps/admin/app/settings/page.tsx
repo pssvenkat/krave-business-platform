@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Sidebar } from "../components/sidebar";
+import { ThemePicker } from "./theme-picker";
 
 export const metadata = { title: "Settings | Krave Admin" };
 
@@ -37,11 +38,14 @@ export default async function SettingsPage() {
         <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm">
           <h1 className="text-2xl font-black text-[#143623]">Platform Settings</h1>
           <p className="text-[#4a6b57] text-sm mt-0.5 font-medium">
-            System configuration, integrations & environment health
+            System configuration, theme branding & environment health
           </p>
         </div>
 
         <div className="p-8 space-y-6 max-w-4xl">
+          {/* Website Theme Selector */}
+          <ThemePicker />
+
           {/* Account Card */}
           <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
             <h2 className="text-[#143623] font-bold text-lg mb-4">Account Information</h2>

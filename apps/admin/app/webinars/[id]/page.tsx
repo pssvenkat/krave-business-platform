@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "../../components/sidebar";
+import { StatusActions } from "./status-actions";
 
 async function getWebinarData(id: string) {
   const cookieStore = await cookies();
@@ -50,13 +51,18 @@ export default async function WebinarDetailPage({ params }: Props) {
       <Sidebar />
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex items-center gap-4">
-          <Link href="/webinars" className="text-[#4a6b57] hover:text-[#143623] font-semibold text-sm transition-colors">
-            ← Back to Webinars
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-xl font-black text-[#143623] leading-tight">{webinar.title}</h1>
+        <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1">
+            <Link href="/webinars" className="text-[#4a6b57] hover:text-[#143623] font-semibold text-sm transition-colors">
+              ← Back to Webinars
+            </Link>
+            <div>
+              <h1 className="text-xl font-black text-[#143623] leading-tight">{webinar.title}</h1>
+            </div>
           </div>
+
+          {/* Action buttons */}
+          <StatusActions webinarId={webinar.id} currentStatus={webinar.status} />
         </div>
 
         <div className="p-8 space-y-6">

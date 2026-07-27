@@ -18,6 +18,7 @@ const schema = z.object({
   youtubeVideoId: z.string().optional(),
   registrationDeadline: z.string().optional(),
   speakerName: z.string().optional(),
+  status: z.enum(["published", "draft"]),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -32,7 +33,7 @@ export default function NewWebinarPage() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { durationMinutes: 90, maxSeats: 500, speakerName: "Venkat Srinivasan" },
+    defaultValues: { durationMinutes: 90, maxSeats: 500, speakerName: "Venkat Srinivasan", status: "published" },
   });
 
   const onSubmit = async (data: FormData) => {
@@ -75,7 +76,7 @@ export default function NewWebinarPage() {
         registration_deadline: data.registrationDeadline
           ? new Date(data.registrationDeadline).toISOString()
           : null,
-        status: "draft",
+        status: data.status,
         created_by: user.id,
       })
       .select("id")
@@ -131,15 +132,28 @@ export default function NewWebinarPage() {
                 />
               </div>
 
-              {/* Speaker Name */}
-              <div>
-                <label className="block text-sm font-bold text-[#143623] mb-1.5">Speaker Name</label>
-                <input
-                  {...register("speakerName")}
-                  id="webinar-speaker"
-                  placeholder="Venkat Srinivasan"
-                  className={inputClass}
-                />
+              {/* Speaker Name + Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-bold text-[#143623] mb-1.5">Speaker Name</label>
+                  <input
+                    {...register("speakerName")}
+                    id="webinar-speaker"
+                    placeholder="Venkat Srinivasan"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-[#143623] mb-1.5">Publish Status</label>
+                  <select
+                    {...register("status")}
+                    id="webinar-status"
+                    className={inputClass}
+                  >
+                    <option value="published">🚀 Publish Immediately</option>
+                    <option value="draft">📝 Save as Draft</option>
+                  </select>
+                </div>
               </div>
 
               {/* Date/time + Duration */}

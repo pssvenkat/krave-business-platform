@@ -1,7 +1,12 @@
 import Image from "next/image";
 import { SPEAKER } from "../content";
+import { WebinarData } from "../lib/get-webinar";
 
-export function Trainer() {
+export function Trainer({ webinar }: { webinar?: WebinarData }) {
+  const name = webinar?.speakerName || SPEAKER.name;
+  const bio = webinar?.speakerBio || SPEAKER.bio;
+  const imageUrl = webinar?.speakerImageUrl || SPEAKER.imageUrl;
+
   return (
     <section id="trainer" className="py-24 bg-[#f4f9f5] border-y border-[#e2efe6]">
       <div className="max-w-5xl mx-auto px-4">
@@ -20,27 +25,29 @@ export function Trainer() {
             <div className="relative">
               {/* Glow ring */}
               <div className="absolute inset-0 rounded-full bg-green-200/50 blur-2xl scale-110" />
-              <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-[#1e5631] shadow-xl">
+              <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-[#1e5631] shadow-xl bg-emerald-50">
                 {/* Fallback shown when image is missing */}
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200 text-7xl">
                   🌱
                 </div>
-                <Image
-                  src={SPEAKER.imageUrl}
-                  alt={SPEAKER.name}
-                  fill
-                  className="object-cover relative"
-                />
+                {imageUrl && (
+                  <Image
+                    src={imageUrl}
+                    alt={name}
+                    fill
+                    className="object-cover relative"
+                  />
+                )}
               </div>
             </div>
           </div>
 
           {/* Info */}
           <div>
-            <h3 className="text-3xl font-black text-[#143623] mb-1">{SPEAKER.name}</h3>
+            <h3 className="text-3xl font-black text-[#143623] mb-1">{name}</h3>
             <p className="text-[#2d7d46] font-bold text-lg mb-4">{SPEAKER.title}</p>
             <p className="text-[#4a6b57] text-base leading-relaxed mb-8 font-medium">
-              {SPEAKER.bio}
+              {bio}
             </p>
 
             {/* Credential chips */}

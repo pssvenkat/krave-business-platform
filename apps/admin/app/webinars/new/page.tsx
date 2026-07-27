@@ -18,6 +18,8 @@ const schema = z.object({
   youtubeVideoId: z.string().optional(),
   registrationDeadline: z.string().optional(),
   speakerName: z.string().optional(),
+  speakerBio: z.string().optional(),
+  speakerImageUrl: z.string().optional(),
   status: z.enum(["published", "draft"]),
 });
 
@@ -75,6 +77,8 @@ export default function NewWebinarPage() {
         title: data.title,
         description: data.description ?? "",
         speaker_name: data.speakerName || "Venkat Srinivasan",
+        speaker_bio: data.speakerBio ?? null,
+        speaker_image_url: data.speakerImageUrl ?? null,
         scheduled_at: scheduledAtIST,
         duration_minutes: data.durationMinutes,
         max_registrations: data.maxSeats,
@@ -130,34 +134,58 @@ export default function NewWebinarPage() {
                 <textarea
                   {...register("description")}
                   id="webinar-description"
-                  rows={4}
+                  rows={3}
                   placeholder="What attendees will learn in this session…"
                   className={`${inputClass} resize-none`}
                 />
               </div>
 
-              {/* Speaker Name + Status */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Speaker Info */}
+              <div className="border-t border-[#e2efe6] pt-5">
+                <h2 className="text-[#143623] font-extrabold text-base mb-4">Speaker / Trainer Details</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-4">
+                  <div>
+                    <label className="block text-sm font-bold text-[#143623] mb-1.5">Speaker Name</label>
+                    <input
+                      {...register("speakerName")}
+                      id="webinar-speaker"
+                      placeholder="Venkat Srinivasan"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-[#143623] mb-1.5">Speaker Photo URL</label>
+                    <input
+                      {...register("speakerImageUrl")}
+                      id="webinar-speaker-photo"
+                      placeholder="https://example.com/photo.jpg or /trainer.jpg"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">Speaker Name</label>
-                  <input
-                    {...register("speakerName")}
-                    id="webinar-speaker"
-                    placeholder="Venkat Srinivasan"
-                    className={inputClass}
+                  <label className="block text-sm font-bold text-[#143623] mb-1.5">Speaker Bio</label>
+                  <textarea
+                    {...register("speakerBio")}
+                    id="webinar-speaker-bio"
+                    rows={3}
+                    placeholder="Short bio of the trainer..."
+                    className={`${inputClass} resize-none`}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">Publish Status</label>
-                  <select
-                    {...register("status")}
-                    id="webinar-status"
-                    className={inputClass}
-                  >
-                    <option value="published">🚀 Publish Immediately</option>
-                    <option value="draft">📝 Save as Draft</option>
-                  </select>
-                </div>
+              </div>
+
+              {/* Publish Status */}
+              <div className="border-t border-[#e2efe6] pt-5">
+                <label className="block text-sm font-bold text-[#143623] mb-1.5">Publish Status</label>
+                <select
+                  {...register("status")}
+                  id="webinar-status"
+                  className={inputClass}
+                >
+                  <option value="published">🚀 Publish Immediately</option>
+                  <option value="draft">📝 Save as Draft</option>
+                </select>
               </div>
 
               {/* Date/time (IST) + Duration */}

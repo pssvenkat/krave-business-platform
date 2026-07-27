@@ -50,7 +50,7 @@ export default async function HomePage() {
       <main>
         <Hero webinar={webinar} />
         <Benefits />
-        <Trainer />
+        <Trainer webinar={webinar} />
         <Testimonials />
         <FaqSection />
         <FooterCta webinar={webinar} />

@@ -15,6 +15,8 @@ export interface WebinarData {
   registrationDeadline: string;
   maxSeats: number;
   speakerName: string;
+  speakerBio: string;
+  speakerImageUrl: string;
 }
 
 interface SupabaseWebinarRow {
@@ -29,6 +31,8 @@ interface SupabaseWebinarRow {
   registration_deadline: string | null;
   max_registrations: number | null;
   speaker_name: string | null;
+  speaker_bio: string | null;
+  speaker_image_url: string | null;
   status: string | null;
 }
 
@@ -102,6 +106,8 @@ export async function getLatestWebinar(): Promise<WebinarData> {
             : WEBINAR.registrationDeadline,
           maxSeats: row.max_registrations || 500,
           speakerName: row.speaker_name || SPEAKER.name,
+          speakerBio: row.speaker_bio || SPEAKER.bio,
+          speakerImageUrl: row.speaker_image_url || SPEAKER.imageUrl,
         };
       }
     } catch (err) {
@@ -113,5 +119,7 @@ export async function getLatestWebinar(): Promise<WebinarData> {
     id: process.env.NEXT_PUBLIC_ACTIVE_WEBINAR_ID ?? "placeholder",
     ...WEBINAR,
     speakerName: SPEAKER.name,
+    speakerBio: SPEAKER.bio,
+    speakerImageUrl: SPEAKER.imageUrl,
   };
 }

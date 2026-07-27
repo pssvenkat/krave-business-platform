@@ -21,17 +21,16 @@ export function Trainer() {
               {/* Glow ring */}
               <div className="absolute inset-0 rounded-full bg-green-500/20 blur-2xl scale-110" />
               <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-green-500/40 shadow-2xl shadow-green-900/60">
+                {/* Fallback shown when image is missing */}
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-800 to-green-950 text-7xl">
+                  🌱
+                </div>
                 <Image
                   src={SPEAKER.imageUrl}
                   alt={SPEAKER.name}
                   fill
-                  className="object-cover"
-                  onError={() => {}} // handled by fallback below
+                  className="object-cover relative"
                 />
-                {/* Fallback avatar */}
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-800 to-green-950 text-7xl">
-                  🌱
-                </div>
               </div>
             </div>
           </div>

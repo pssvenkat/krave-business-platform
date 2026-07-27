@@ -11,11 +11,11 @@ Each application is independently deployable on Vercel under subdomains of `krav
 
 | App | Subdomain | Status |
 |-----|-----------|--------|
-| Webinar | `webinar.kravemicrogreens.in` | 🔄 Milestone 2 |
-| Admin | `admin.kravemicrogreens.in` | 🔄 Milestone 2 |
+| Webinar | `webinar.kravemicrogreens.in` | ✅ Live |
+| Admin | `admin.kravemicrogreens.in` | ✅ Live |
 | CRM | `crm.kravemicrogreens.in` | ⏳ Milestone 3 |
-| Inventory | `inventory.kravemicrogreens.in` | ⏳ Milestone 5 |
-| Academy | `academy.kravemicrogreens.in` | ⏳ Milestone 7 |
+| Analytics | `analytics.kravemicrogreens.in` | ⏳ Milestone 4 |
+| Academy | `academy.kravemicrogreens.in` | ⏳ Milestone 5 |
 
 ---
 
@@ -25,7 +25,7 @@ Each application is independently deployable on Vercel under subdomains of `krav
 **Goal**: Production-ready monorepo scaffold that builds and deploys successfully.
 
 - [x] Turborepo + pnpm workspaces
-- [x] Next.js 15 App Router (webinar + admin apps)
+- [x] Next.js 16 App Router (webinar + admin apps)
 - [x] TypeScript strict mode
 - [x] Tailwind CSS + shadcn/ui
 - [x] Supabase (Auth, Database, Storage)
@@ -39,24 +39,24 @@ Each application is independently deployable on Vercel under subdomains of `krav
 
 ---
 
-### 🔄 Milestone 2 – Webinar Platform (Next)
-**Goal**: Fully functional webinar registration and management system.
+### ✅ Milestone 2 – Webinar Platform (Complete)
+**Goal**: Fully functional webinar registration, trainer management, and admin platform.
 
 **Webinar App (`apps/webinar`)**
-- [ ] Landing page: Hero, Benefits, Trainer, Testimonials, FAQ, Countdown, Register CTA
-- [ ] Registration page: Full form with validation + Cloudflare Turnstile
-- [ ] Thank You page: Confirmation + Calendar + WhatsApp Community buttons
-- [ ] Webinar Live page: Title, Description, Speaker, Countdown, YouTube Live embed
-- [ ] SEO: Metadata, sitemap, robots.txt, OpenGraph, Twitter Cards, Structured Data
-- [ ] Email automation: Registration confirmation, 1-day, 1-hour, 10-min reminders
+- [x] Landing page: Hero, Benefits, Dynamic Trainer, Testimonials, FAQ, Countdown, Register CTA
+- [x] Registration page: Full form with validation + Turnstile fallback
+- [x] Thank You page: Dynamic Confirmation + Localized Date/Time + Calendar + WhatsApp Community buttons
+- [x] Webinar Live page: Title, Description, Speaker, Countdown, YouTube Live embed
+- [x] Dynamic visitor local timezone detection (`<LocalizedTime />`)
+- [x] Email automation: Registration confirmation
 
 **Admin App (`apps/admin`)**
-- [ ] Dashboard: Key metrics, upcoming webinars, recent registrations
-- [ ] Webinar CRUD: Create, read, update, delete webinars
-- [ ] Registration management: List, search, filter registrations
-- [ ] Attendance tracking: Mark attendance, export
-- [ ] CSV export
-- [ ] Audit log viewer
+- [x] Dashboard: Key metrics, upcoming webinars, recent registrations
+- [x] Webinar CRUD: Create, read, edit, status actions (Publish, Go Live, End)
+- [x] Trainer Profile Management (`/trainers`): Add, edit, delete trainers, local image file picker + database Base64 image storage
+- [x] Website Color Theme Selector (`/settings`): Interactive HEX code inputs + live branding injection
+- [x] Registration management: List, search, filter registrations
+- [x] Both apps build clean & deployed to Vercel
 
 ---
 
@@ -85,29 +85,7 @@ Each application is independently deployable on Vercel under subdomains of `krav
 
 ---
 
-### ⏳ Milestone 5 – Inventory
-**Goal**: Microgreens inventory and supplier management.
-
-- [ ] Products (seeds, trays, supplies)
-- [ ] Stock tracking
-- [ ] Suppliers
-- [ ] Purchase orders
-
----
-
-### ⏳ Milestone 6 – Ecommerce
-**Goal**: Online store for Krave products.
-
-- [ ] Product catalog
-- [ ] Shopping cart
-- [ ] Checkout
-- [ ] Razorpay / Stripe payments
-- [ ] Orders
-- [ ] Customer purchase history
-
----
-
-### ⏳ Milestone 7 – Academy
+### ⏳ Milestone 5 – Academy
 **Goal**: Online learning platform.
 
 - [ ] Courses and lessons
@@ -117,7 +95,7 @@ Each application is independently deployable on Vercel under subdomains of `krav
 
 ---
 
-### ⏳ Milestone 8 – AI & Automation
+### ⏳ Milestone 6 – AI & Automation
 **Goal**: AI-powered business automation.
 
 - [ ] AI assistant

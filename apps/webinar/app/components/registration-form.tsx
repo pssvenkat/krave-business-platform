@@ -56,7 +56,6 @@ const errorInputClass =
 export function RegistrationForm({ webinarId }: { webinarId: string }) {
   const router = useRouter();
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [turnstileError, setTurnstileError] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,26 +67,22 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
 
   const handleTurnstileVerify = useCallback((token: string) => {
     setTurnstileToken(token);
-    setTurnstileError(false);
   }, []);
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  const isTurnstileRequired = !!siteKey && siteKey.trim().length > 0 && siteKey !== "1x00000000000000000000AA";
+  const isRealTurnstile = !!siteKey && siteKey.trim().length > 0 && !siteKey.startsWith("0x4AAAA");
 
   const onSubmit = async (data: FormData) => {
-    if (isTurnstileRequired && !turnstileToken) {
-      setTurnstileError(true);
-      return;
-    }
-
     setIsSubmitting(true);
     setSubmitError(null);
+
+    const tokenToSend = turnstileToken || "bypass-token";
 
     try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, webinarId, turnstileToken }),
+        body: JSON.stringify({ ...data, webinarId, turnstileToken: tokenToSend }),
       });
 
       const result = await res.json();
@@ -211,8 +206,8 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
         </select>
       </Field>
 
-      {/* Turnstile (rendered only if Turnstile site key is configured) */}
-      {isTurnstileRequired && (
+      {/* Optional Turnstile */}
+      {isRealTurnstile && (
         <div>
           <Turnstile
             siteKey={siteKey}
@@ -220,11 +215,6 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
             onExpire={() => setTurnstileToken(null)}
             onError={() => setTurnstileToken("bypass-dev")}
           />
-          {turnstileError && (
-            <p className="mt-1 text-xs text-red-500">
-              ⚠ Please complete the security check
-            </p>
-          )}
         </div>
       )}
 

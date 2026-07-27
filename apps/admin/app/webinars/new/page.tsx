@@ -53,7 +53,7 @@ export default function NewWebinarPage() {
       return;
     }
 
-    // Ensure profile row exists to satisfy foreign key constraint on created_by
+    // Ensure profile row exists
     await supabase.from("profiles").upsert(
       {
         id: user.id,
@@ -63,19 +63,23 @@ export default function NewWebinarPage() {
       { onConflict: "id" }
     );
 
+    // Convert datetime-local input (intended as IST +05:30) explicitly to ISO string
+    const scheduledAtIST = new Date(`${data.scheduledAt}:00+05:30`).toISOString();
+    const deadlineIST = data.registrationDeadline
+      ? new Date(`${data.registrationDeadline}:00+05:30`).toISOString()
+      : null;
+
     const { error: insertError, data: webinar } = await supabase
       .from("webinars")
       .insert({
         title: data.title,
         description: data.description ?? "",
         speaker_name: data.speakerName || "Venkat Srinivasan",
-        scheduled_at: new Date(data.scheduledAt).toISOString(),
+        scheduled_at: scheduledAtIST,
         duration_minutes: data.durationMinutes,
         max_registrations: data.maxSeats,
         youtube_video_id: data.youtubeVideoId ?? null,
-        registration_deadline: data.registrationDeadline
-          ? new Date(data.registrationDeadline).toISOString()
-          : null,
+        registration_deadline: deadlineIST,
         status: data.status,
         created_by: user.id,
       })
@@ -156,11 +160,12 @@ export default function NewWebinarPage() {
                 </div>
               </div>
 
-              {/* Date/time + Duration */}
+              {/* Date/time (IST) + Duration */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">
-                    Scheduled Date & Time <span className="text-red-500">*</span>
+                  <label className="block text-sm font-bold text-[#143623] mb-1.5 flex items-center justify-between">
+                    <span>Scheduled Date & Time <span className="text-red-500">*</span></span>
+                    <span className="text-[#1e5631] text-xs font-bold bg-[#edf6f0] px-2 py-0.5 rounded-md border border-[#d0e6d6]">IST (+05:30)</span>
                   </label>
                   <input
                     {...register("scheduledAt")}
@@ -199,8 +204,9 @@ export default function NewWebinarPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-[#143623] mb-1.5">
-                    Registration Deadline
+                  <label className="block text-sm font-bold text-[#143623] mb-1.5 flex items-center justify-between">
+                    <span>Registration Deadline</span>
+                    <span className="text-[#4a6b57] text-xs font-semibold">IST</span>
                   </label>
                   <input
                     {...register("registrationDeadline")}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { WEBINAR, SPEAKER } from "../content";
 import { Countdown } from "./countdown";
 import { WebinarData } from "../lib/get-webinar";
+import { LocalizedTime } from "./localized-time";
 
 export function Hero({ webinar }: { webinar?: WebinarData }) {
   const data = webinar ?? { ...WEBINAR, speakerName: SPEAKER.name };
@@ -21,7 +22,9 @@ export function Hero({ webinar }: { webinar?: WebinarData }) {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-600 opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-700" />
           </span>
-          <span className="text-[#1e5631] text-sm font-bold tracking-wide">FREE LIVE WEBINAR · {data.date}</span>
+          <span className="text-[#1e5631] text-sm font-bold tracking-wide">
+            FREE LIVE WEBINAR · <LocalizedTime dateISO={data.dateISO} format="chip" />
+          </span>
         </div>
 
         {/* Headline */}
@@ -34,13 +37,10 @@ export function Hero({ webinar }: { webinar?: WebinarData }) {
           {data.subtitle}
         </p>
 
-        {/* Meta info */}
+        {/* Meta info chips with location-detected timezone */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-10 text-sm font-semibold text-[#1e5631]">
           <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-[#e2efe6] shadow-xs">
-            <span>🗓️</span> {data.date}
-          </span>
-          <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-[#e2efe6] shadow-xs">
-            <span>⏰</span> {data.time}
+            <span>🗓️</span> <LocalizedTime dateISO={data.dateISO} format="full" />
           </span>
           <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-[#e2efe6] shadow-xs">
             <span>⏱️</span> {data.duration}

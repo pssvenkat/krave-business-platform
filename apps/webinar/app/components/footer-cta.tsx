@@ -3,6 +3,7 @@ import Image from "next/image";
 import { WEBINAR, SPEAKER } from "../content";
 import { Countdown } from "./countdown";
 import { WebinarData } from "../lib/get-webinar";
+import { LocalizedTime } from "./localized-time";
 
 export function FooterCta({ webinar }: { webinar?: WebinarData }) {
   const data = webinar ?? { ...WEBINAR, speakerName: SPEAKER.name };
@@ -26,7 +27,7 @@ export function FooterCta({ webinar }: { webinar?: WebinarData }) {
         </h2>
 
         <p className="text-[#4a6b57] text-lg mb-8 max-w-xl mx-auto font-medium">
-          Join {data.speakerName} live on <strong className="text-[#143623] font-bold">{data.date}</strong> at <strong className="text-[#143623] font-bold">{data.time}</strong> and get your personal roadmap to a microgreens business.
+          Join {data.speakerName} live on <strong className="text-[#143623] font-bold"><LocalizedTime dateISO={data.dateISO} format="full" /></strong> and get your personal roadmap to a microgreens business.
         </p>
 
         {/* Countdown */}

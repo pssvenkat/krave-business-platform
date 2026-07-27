@@ -71,10 +71,11 @@ export default async function WebinarDetailPage({ params }: Props) {
             {[
               { label: "Status", value: webinar.status },
               {
-                label: "Scheduled",
+                label: "Scheduled (IST)",
                 value: new Date(webinar.scheduled_at).toLocaleDateString("en-IN", {
-                  day: "numeric", month: "short", year: "numeric",
-                }),
+                  timeZone: "Asia/Kolkata",
+                  day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+                }) + " IST",
               },
               { label: "Registrations", value: `${count} / ${webinar.max_registrations ?? 500}` },
               { label: "Duration", value: `${webinar.duration_minutes} min` },

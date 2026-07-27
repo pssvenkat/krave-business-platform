@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { WEBINAR } from "../content";
 import { WebinarData } from "../lib/get-webinar";
+import { LocalizedTime } from "./localized-time";
 
 export function Navbar({ webinar }: { webinar?: WebinarData }) {
   const data = webinar ?? WEBINAR;
@@ -23,10 +24,10 @@ export function Navbar({ webinar }: { webinar?: WebinarData }) {
           </div>
         </Link>
 
-        {/* Info chip */}
+        {/* Info chip with location-detected timezone */}
         <div className="hidden md:flex items-center gap-2 text-sm text-[#1e5631] font-semibold bg-[#edf6f0] px-3.5 py-1.5 rounded-full border border-[#d0e6d6]">
           <span>📅</span>
-          <span>{data.date} · {data.time}</span>
+          <LocalizedTime dateISO={data.dateISO} format="chip" />
         </div>
 
         {/* CTA */}

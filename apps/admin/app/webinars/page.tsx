@@ -100,13 +100,14 @@ export default async function WebinarsPage() {
                       </h3>
                       <p className="text-[#4a6b57] text-sm mt-1 font-medium">
                         {new Date(w.scheduled_at as string).toLocaleDateString("en-IN", {
+                          timeZone: "Asia/Kolkata",
                           weekday: "long",
                           day: "numeric",
                           month: "long",
                           year: "numeric",
                           hour: "2-digit",
                           minute: "2-digit",
-                        })}
+                        })} IST
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0 bg-[#f8faf5] border border-[#e2efe6] px-4 py-2.5 rounded-xl">

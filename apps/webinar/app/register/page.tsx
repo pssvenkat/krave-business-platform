@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "../components/navbar";
 import { RegistrationForm } from "../components/registration-form";
 import { getLatestWebinar } from "../lib/get-webinar";
+import { LocalizedTime } from "../components/localized-time";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -32,7 +33,7 @@ export default async function RegisterPage() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-700" />
                 </span>
                 <span className="text-[#1e5631] text-sm font-bold">
-                  FREE LIVE WEBINAR · {webinar.date}
+                  FREE LIVE WEBINAR · <LocalizedTime dateISO={webinar.dateISO} format="chip" />
                 </span>
               </div>
 
@@ -44,7 +45,7 @@ export default async function RegisterPage() {
 
               <div className="space-y-4 mb-8">
                 {[
-                  { icon: "🗓️", text: `${webinar.date} · ${webinar.time}` },
+                  { icon: "🗓️", text: <LocalizedTime dateISO={webinar.dateISO} format="full" /> },
                   { icon: "⏱️", text: `Duration: ${webinar.duration}` },
                   { icon: "🎙️", text: `Trainer: ${webinar.speakerName}` },
                   { icon: "💻", text: "Online · YouTube Live" },

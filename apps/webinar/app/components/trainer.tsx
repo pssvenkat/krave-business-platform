@@ -3,26 +3,26 @@ import { SPEAKER } from "../content";
 
 export function Trainer() {
   return (
-    <section id="trainer" className="py-24 bg-[#0d2318]">
+    <section id="trainer" className="py-24 bg-[#f4f9f5] border-y border-[#e2efe6]">
       <div className="max-w-5xl mx-auto px-4">
         <div className="text-center mb-16">
-          <span className="inline-block bg-green-900/60 text-green-400 text-sm font-bold px-4 py-1.5 rounded-full mb-4">
+          <span className="inline-block bg-[#e2efe6] text-[#1e5631] text-xs font-bold px-4 py-1.5 rounded-full mb-3 tracking-wider uppercase">
             YOUR TRAINER
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-white">
+          <h2 className="text-3xl sm:text-4xl font-black text-[#143623]">
             Learn From India&apos;s Leading Microgreens Expert
           </h2>
         </div>
 
-        <div className="flex flex-col lg:flex-row items-center gap-12">
+        <div className="flex flex-col lg:flex-row items-center gap-12 bg-white rounded-3xl p-8 sm:p-12 border border-[#e2efe6] shadow-xl shadow-green-950/5">
           {/* Photo */}
           <div className="flex-shrink-0">
             <div className="relative">
               {/* Glow ring */}
-              <div className="absolute inset-0 rounded-full bg-green-500/20 blur-2xl scale-110" />
-              <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-green-500/40 shadow-2xl shadow-green-900/60">
+              <div className="absolute inset-0 rounded-full bg-green-200/50 blur-2xl scale-110" />
+              <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-[#1e5631] shadow-xl">
                 {/* Fallback shown when image is missing */}
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-800 to-green-950 text-7xl">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-100 to-green-200 text-7xl">
                   🌱
                 </div>
                 <Image
@@ -37,9 +37,9 @@ export function Trainer() {
 
           {/* Info */}
           <div>
-            <h3 className="text-3xl font-black text-white mb-1">{SPEAKER.name}</h3>
-            <p className="text-green-400 font-semibold mb-6">{SPEAKER.title}</p>
-            <p className="text-green-100/70 text-base leading-relaxed mb-8">
+            <h3 className="text-3xl font-black text-[#143623] mb-1">{SPEAKER.name}</h3>
+            <p className="text-[#2d7d46] font-bold text-lg mb-4">{SPEAKER.title}</p>
+            <p className="text-[#4a6b57] text-base leading-relaxed mb-8 font-medium">
               {SPEAKER.bio}
             </p>
 
@@ -48,10 +48,10 @@ export function Trainer() {
               {SPEAKER.credentials.map((c, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 bg-green-900/40 border border-green-700/40 rounded-lg px-4 py-2"
+                  className="flex items-center gap-2 bg-[#f0f7f2] border border-[#d0e6d6] rounded-xl px-4 py-2.5"
                 >
-                  <span className="text-green-400">✓</span>
-                  <span className="text-green-200 text-sm font-medium">{c}</span>
+                  <span className="text-[#1e5631] font-bold">✓</span>
+                  <span className="text-[#143623] text-sm font-semibold">{c}</span>
                 </div>
               ))}
             </div>

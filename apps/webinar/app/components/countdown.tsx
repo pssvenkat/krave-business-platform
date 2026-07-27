@@ -24,13 +24,13 @@ function Digit({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center">
       <div className="relative">
-        <div className="bg-white/10 border border-white/20 rounded-xl w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center backdrop-blur-sm">
-          <span className="text-2xl sm:text-3xl font-black text-white tabular-nums">
+        <div className="bg-white border border-[#d0e6d6] rounded-2xl w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shadow-md">
+          <span className="text-2xl sm:text-3xl font-black text-[#143623] tabular-nums">
             {String(value).padStart(2, "0")}
           </span>
         </div>
       </div>
-      <span className="text-green-300/80 text-xs mt-2 font-medium uppercase tracking-wider">
+      <span className="text-[#4a6b57] text-xs mt-2 font-bold uppercase tracking-wider">
         {label}
       </span>
     </div>
@@ -66,23 +66,23 @@ export function Countdown({ targetISO }: { targetISO: string }) {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
         </span>
-        <span className="text-red-400 font-bold text-lg">Registration Closed</span>
+        <span className="text-red-600 font-bold text-lg">Registration Closed</span>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <p className="text-green-300/80 text-sm font-medium tracking-widest uppercase">
+      <p className="text-[#1e5631] text-xs font-bold tracking-widest uppercase bg-white/80 px-3 py-1 rounded-full border border-[#e2efe6]">
         Webinar Starts In
       </p>
       <div className="flex items-start gap-3 sm:gap-4">
         <Digit value={timeLeft.days} label="Days" />
-        <span className="text-white/60 text-2xl font-bold mt-4">:</span>
+        <span className="text-[#1e5631] text-2xl font-black mt-4">:</span>
         <Digit value={timeLeft.hours} label="Hours" />
-        <span className="text-white/60 text-2xl font-bold mt-4">:</span>
+        <span className="text-[#1e5631] text-2xl font-black mt-4">:</span>
         <Digit value={timeLeft.minutes} label="Mins" />
-        <span className="text-white/60 text-2xl font-bold mt-4">:</span>
+        <span className="text-[#1e5631] text-2xl font-black mt-4">:</span>
         <Digit value={timeLeft.seconds} label="Secs" />
       </div>
     </div>

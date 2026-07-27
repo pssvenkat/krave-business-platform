@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { WEBINAR } from "../content";
 
 export const metadata: Metadata = {
@@ -17,13 +18,13 @@ export default async function ThankYouPage({ searchParams }: Props) {
   const name = params.name ?? "there";
 
   return (
-    <main className="min-h-screen krave-gradient flex items-center justify-center px-4">
-      {/* Confetti-like decoration */}
+    <main className="min-h-screen bg-gradient-to-b from-[#edf6f0] via-[#f7fbf8] to-white flex items-center justify-center px-4 py-12">
+      {/* Confetti decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {["🌱", "✨", "🎉", "💚", "⭐"].map((emoji, i) => (
           <div
             key={i}
-            className="absolute text-2xl opacity-20 animate-bounce"
+            className="absolute text-2xl opacity-30 animate-bounce"
             style={{
               left: `${10 + i * 20}%`,
               top: `${15 + (i % 3) * 25}%`,
@@ -38,25 +39,35 @@ export default async function ThankYouPage({ searchParams }: Props) {
 
       <div className="relative max-w-2xl w-full">
         {/* Success card */}
-        <div className="bg-white rounded-3xl shadow-2xl shadow-green-900/40 overflow-hidden">
+        <div className="bg-white rounded-3xl border border-[#e2efe6] shadow-xl shadow-green-950/5 overflow-hidden">
           {/* Top bar */}
-          <div className="bg-green-500 px-8 py-6 text-center">
-            <div className="text-5xl mb-3">🎉</div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
+          <div className="bg-[#1e5631] px-8 py-8 text-center text-white">
+            {/* Logo in white field container */}
+            <div className="inline-flex items-center justify-center bg-white border border-[#e2efe6] rounded-xl px-4 py-2 shadow-md mb-4">
+              <Image
+                src="/logo.jpg"
+                alt="Krave Microgreens"
+                width={120}
+                height={48}
+                className="h-10 w-auto object-contain"
+                priority
+              />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black">
               You&apos;re In, {name}!
             </h1>
-            <p className="text-green-100 mt-1">
+            <p className="text-green-100 mt-1 font-medium text-sm">
               Your spot has been reserved successfully.
             </p>
           </div>
 
           <div className="p-6 sm:p-8 space-y-6">
             {/* Webinar details box */}
-            <div className="bg-green-50 border border-green-100 rounded-2xl p-5">
-              <p className="text-green-700 font-bold text-sm mb-3 uppercase tracking-wide">
+            <div className="bg-[#f0f7f2] border border-[#d0e6d6] rounded-2xl p-5">
+              <p className="text-[#1e5631] font-bold text-xs mb-3 uppercase tracking-wider">
                 Webinar Details
               </p>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2.5 text-sm">
                 {[
                   { icon: "📋", label: "Topic", value: WEBINAR.title },
                   { icon: "🗓️", label: "Date", value: WEBINAR.date },
@@ -65,17 +76,17 @@ export default async function ThankYouPage({ searchParams }: Props) {
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <span>{item.icon}</span>
-                    <span className="text-gray-500">{item.label}:</span>
-                    <span className="text-gray-800 font-medium">{item.value}</span>
+                    <span className="text-[#4a6b57] font-medium">{item.label}:</span>
+                    <span className="text-[#143623] font-bold">{item.value}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Confirmation email notice */}
-            <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm">
+            <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
               <span className="text-xl">📧</span>
-              <p className="text-blue-800">
+              <p className="text-blue-900 font-medium">
                 A confirmation email has been sent to you with the webinar link and
                 reminder schedule. Check your spam folder if you don&apos;t see it.
               </p>
@@ -88,7 +99,7 @@ export default async function ThankYouPage({ searchParams }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
                 id="add-to-calendar-btn"
-                className="flex items-center justify-center gap-2 bg-white border-2 border-gray-200 hover:border-green-400 text-gray-800 font-semibold py-3 px-4 rounded-xl transition-all duration-200 text-sm hover:shadow-md"
+                className="flex items-center justify-center gap-2 bg-white border border-[#d0e6d6] hover:bg-[#f0f7f2] text-[#143623] font-bold py-3.5 px-4 rounded-xl transition-all duration-200 text-sm shadow-xs"
               >
                 📅 Add to Calendar
               </a>
@@ -97,15 +108,15 @@ export default async function ThankYouPage({ searchParams }: Props) {
                 target="_blank"
                 rel="noopener noreferrer"
                 id="join-whatsapp-btn"
-                className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20c45b] text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 text-sm shadow-md shadow-green-900/20"
+                className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20c45b] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 text-sm shadow-md"
               >
                 💬 Join WhatsApp Community
               </a>
             </div>
 
             {/* Share */}
-            <div className="text-center">
-              <p className="text-gray-500 text-sm mb-3">
+            <div className="text-center pt-2">
+              <p className="text-[#4a6b57] text-sm font-medium mb-3">
                 Know someone who&apos;d benefit? Share the webinar 👇
               </p>
               <div className="flex justify-center gap-3">
@@ -126,7 +137,7 @@ export default async function ThankYouPage({ searchParams }: Props) {
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`${s.bg} text-white text-xs font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity`}
+                    className={`${s.bg} text-white text-xs font-bold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity`}
                   >
                     {s.label}
                   </a>
@@ -137,7 +148,7 @@ export default async function ThankYouPage({ searchParams }: Props) {
             <div className="text-center pt-2">
               <Link
                 href="/"
-                className="text-green-600 text-sm font-medium hover:underline"
+                className="text-[#1e5631] text-sm font-bold hover:underline"
               >
                 ← Back to webinar page
               </Link>

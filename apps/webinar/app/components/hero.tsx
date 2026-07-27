@@ -4,49 +4,45 @@ import { Countdown } from "./countdown";
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden krave-gradient pt-16">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-[#edf6f0] via-[#f7fbf8] to-white pt-20 pb-16">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-green-500/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-green-400/10 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-green-600/5 blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-green-200/40 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-emerald-100/50 blur-3xl" />
       </div>
 
-      <div className="relative max-w-4xl mx-auto px-4 py-20 text-center">
+      <div className="relative max-w-4xl mx-auto px-4 py-12 text-center">
         {/* Live badge */}
-        <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-500/30 rounded-full px-4 py-1.5 mb-6">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
+        <div className="inline-flex items-center gap-2 bg-[#e2efe6] border border-[#b8dbc3] rounded-full px-4.5 py-1.5 mb-6 shadow-xs">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-600 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-700" />
           </span>
-          <span className="text-green-300 text-sm font-semibold">FREE LIVE WEBINAR · {WEBINAR.date}</span>
+          <span className="text-[#1e5631] text-sm font-bold tracking-wide">FREE LIVE WEBINAR · {WEBINAR.date}</span>
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 leading-tight tracking-tight">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#143623] mb-4 leading-tight tracking-tight">
           {WEBINAR.title}
         </h1>
 
         {/* Subtitle */}
-        <p className="text-xl sm:text-2xl text-green-200 mb-8 font-medium">
+        <p className="text-xl sm:text-2xl text-[#2d7d46] mb-8 font-semibold">
           {WEBINAR.subtitle}
         </p>
 
         {/* Meta info */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-10 text-sm text-green-300/80">
-          <span className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-10 text-sm font-semibold text-[#1e5631]">
+          <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-[#e2efe6] shadow-xs">
             <span>🗓️</span> {WEBINAR.date}
           </span>
-          <span className="w-1 h-1 rounded-full bg-green-500/50" />
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-[#e2efe6] shadow-xs">
             <span>⏰</span> {WEBINAR.time}
           </span>
-          <span className="w-1 h-1 rounded-full bg-green-500/50" />
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-[#e2efe6] shadow-xs">
             <span>⏱️</span> {WEBINAR.duration}
           </span>
-          <span className="w-1 h-1 rounded-full bg-green-500/50" />
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-full border border-[#e2efe6] shadow-xs">
             <span>🎙️</span> {SPEAKER.name}
           </span>
         </div>
@@ -61,7 +57,7 @@ export function Hero() {
           <Link
             href="/register"
             id="hero-register-btn"
-            className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 text-white font-black text-lg px-10 py-4 rounded-xl transition-all duration-200 shadow-2xl shadow-green-900/60 hover:shadow-green-800/70 hover:-translate-y-0.5 active:scale-95"
+            className="inline-flex items-center justify-center gap-2 bg-[#1e5631] hover:bg-[#2d7d46] text-white font-black text-lg px-10 py-4 rounded-2xl transition-all duration-200 shadow-xl shadow-green-950/15 hover:shadow-2xl hover:-translate-y-0.5 active:scale-95"
           >
             🎯 Reserve My Free Spot
           </Link>
@@ -69,15 +65,15 @@ export function Hero() {
             href={WEBINAR.whatsappCommunityUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-base px-8 py-4 rounded-xl transition-all duration-200 backdrop-blur-sm"
+            className="inline-flex items-center justify-center gap-2 bg-white hover:bg-green-50/60 border border-[#b8dbc3] text-[#1e5631] font-bold text-base px-8 py-4 rounded-2xl transition-all duration-200 shadow-sm"
           >
             💬 Join WhatsApp Community
           </a>
         </div>
 
         {/* Social proof */}
-        <p className="mt-6 text-green-400/70 text-sm">
-          🔥 <strong className="text-green-300">2,000+</strong> entrepreneurs already registered · Limited to {WEBINAR.maxSeats} seats
+        <p className="mt-6 text-[#4a6b57] text-sm font-medium">
+          🔥 <strong className="text-[#143623] font-bold">2,000+</strong> entrepreneurs already registered · Limited to {WEBINAR.maxSeats} seats
         </p>
       </div>
     </section>

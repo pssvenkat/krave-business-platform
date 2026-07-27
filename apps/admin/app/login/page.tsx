@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -50,23 +51,30 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#080f0b] flex items-center justify-center px-4">
+    <main className="min-h-screen bg-[#f8faf5] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Logo Container - White field for logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-green-900/40 border border-green-700/40 mb-4 text-3xl">
-            🌱
+          <div className="inline-flex items-center justify-center bg-white border border-[#e2efe6] rounded-2xl px-6 py-3 shadow-md mb-4">
+            <Image
+              src="/logo.jpg"
+              alt="Krave Microgreens"
+              width={140}
+              height={56}
+              className="h-12 w-auto object-contain"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-black text-white">Krave Admin</h1>
-          <p className="text-gray-500 text-sm mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-black text-[#143623]">Krave Admin</h1>
+          <p className="text-[#4a6b57] text-sm mt-1">Sign in to your platform dashboard</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
+        <div className="bg-white border border-[#e2efe6] rounded-2xl p-8 shadow-xl shadow-green-900/5">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-1.5">
+              <label className="block text-sm font-semibold text-[#143623] mb-1.5">
                 Email Address
               </label>
               <input
@@ -74,17 +82,17 @@ export default function LoginPage() {
                 type="email"
                 id="login-email"
                 placeholder="admin@kravemicrogreens.in"
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                className="w-full px-4 py-3 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all"
                 autoComplete="email"
               />
               {errors.email && (
-                <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>
+                <p className="mt-1 text-xs text-red-600 font-medium">{errors.email.message}</p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-1.5">
+              <label className="block text-sm font-semibold text-[#143623] mb-1.5">
                 Password
               </label>
               <input
@@ -92,17 +100,17 @@ export default function LoginPage() {
                 type="password"
                 id="login-password"
                 placeholder="••••••••"
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                className="w-full px-4 py-3 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all"
                 autoComplete="current-password"
               />
               {errors.password && (
-                <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>
+                <p className="mt-1 text-xs text-red-600 font-medium">{errors.password.message}</p>
               )}
             </div>
 
             {/* Error */}
             {error && (
-              <div className="bg-red-900/20 border border-red-700/30 rounded-xl p-3 text-red-400 text-sm">
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 text-red-700 text-sm font-medium">
                 {error}
               </div>
             )}
@@ -112,7 +120,7 @@ export default function LoginPage() {
               type="submit"
               id="login-submit-btn"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-500 disabled:bg-green-900 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full bg-[#1e5631] hover:bg-[#2d7d46] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-green-900/15 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -126,8 +134,8 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="text-center text-gray-600 text-xs mt-6">
-          Krave Microgreens Admin · Authorised access only
+        <p className="text-center text-[#6b8e78] text-xs mt-6">
+          Krave Microgreens Admin · Authorized access only
         </p>
       </div>
     </main>

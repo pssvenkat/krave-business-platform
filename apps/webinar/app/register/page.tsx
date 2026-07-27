@@ -9,34 +9,32 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-// This is the active webinar ID — set to your Supabase webinar row ID
-// You can fetch this dynamically once the admin creates a webinar in Supabase
 const ACTIVE_WEBINAR_ID = process.env.NEXT_PUBLIC_ACTIVE_WEBINAR_ID ?? "placeholder";
 
 export default function RegisterPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen krave-gradient pt-16">
-        <div className="max-w-6xl mx-auto px-4 py-16 lg:py-24">
+      <main className="min-h-screen bg-gradient-to-b from-[#edf6f0] via-[#f7fbf8] to-white pt-16">
+        <div className="max-w-6xl mx-auto px-4 py-12 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* Left: value prop */}
-            <div className="text-white">
-              <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-500/30 rounded-full px-4 py-1.5 mb-6">
+            <div className="text-[#143623]">
+              <div className="inline-flex items-center gap-2 bg-[#e2efe6] border border-[#b8dbc3] rounded-full px-4 py-1.5 mb-6">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-600 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-700" />
                 </span>
-                <span className="text-green-300 text-sm font-semibold">
+                <span className="text-[#1e5631] text-sm font-bold">
                   FREE LIVE WEBINAR · {WEBINAR.date}
                 </span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-black mb-4 leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-black mb-4 leading-tight text-[#143623]">
                 {WEBINAR.title}
               </h1>
 
-              <p className="text-green-200/80 text-lg mb-8">{WEBINAR.subtitle}</p>
+              <p className="text-[#2d7d46] text-lg font-semibold mb-8">{WEBINAR.subtitle}</p>
 
               <div className="space-y-4 mb-8">
                 {[
@@ -46,26 +44,26 @@ export default function RegisterPage() {
                   { icon: "💻", text: "Online · YouTube Live" },
                   { icon: "💯", text: "100% Free — No payment required" },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3">
+                  <div key={i} className="flex items-center gap-3 font-semibold text-[#143623]">
                     <span className="text-xl">{item.icon}</span>
-                    <span className="text-green-100">{item.text}</span>
+                    <span>{item.text}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="bg-white/10 border border-white/10 rounded-2xl p-5 backdrop-blur-sm">
-                <p className="text-green-300 font-bold text-sm uppercase tracking-wider mb-3">
+              <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
+                <p className="text-[#1e5631] font-bold text-xs uppercase tracking-wider mb-3">
                   What you&apos;ll learn
                 </p>
-                <ul className="space-y-2">
+                <ul className="space-y-2.5">
                   {[
                     "How to start with just ₹3,000",
                     "Where to find your first 10 customers",
                     "Grow cycle, packaging & pricing secrets",
                     "Scale from side income to full business",
                   ].map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-green-100">
-                      <span className="text-green-400 mt-0.5">✓</span>
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-[#143623] font-medium">
+                      <span className="text-[#1e5631] font-bold mt-0.5">✓</span>
                       {item}
                     </li>
                   ))}
@@ -74,12 +72,12 @@ export default function RegisterPage() {
             </div>
 
             {/* Right: Form */}
-            <div className="bg-white rounded-3xl shadow-2xl shadow-green-900/40 p-6 sm:p-8">
+            <div className="bg-white rounded-3xl border border-[#e2efe6] shadow-xl shadow-green-950/5 p-6 sm:p-8">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-black text-gray-900 mb-1">
+                <h2 className="text-2xl font-black text-[#143623] mb-1">
                   Reserve Your Free Spot
                 </h2>
-                <p className="text-gray-500 text-sm">
+                <p className="text-[#4a6b57] text-sm font-medium">
                   Fill in your details below — takes 30 seconds
                 </p>
               </div>

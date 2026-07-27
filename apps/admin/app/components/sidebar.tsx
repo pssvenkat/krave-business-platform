@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const NAV = [
@@ -15,20 +16,25 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex flex-col w-60 min-h-screen bg-[#0d2318] border-r border-white/10 flex-shrink-0">
-      {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10">
-        <div className="flex items-center gap-2.5">
-          <span className="text-2xl">🌱</span>
-          <div>
-            <p className="text-white font-bold text-sm leading-tight">Krave</p>
-            <p className="text-green-400 text-xs">Admin Platform</p>
+    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-[#e2efe6] flex-shrink-0 shadow-sm">
+      {/* Logo Container - White field for logo */}
+      <div className="px-6 py-5 border-b border-[#e2efe6] bg-[#f8faf5]/50">
+        <Link href="/dashboard" className="flex items-center">
+          <div className="bg-white rounded-xl px-3.5 py-2 border border-[#e2efe6] shadow-sm flex items-center">
+            <Image
+              src="/logo.jpg"
+              alt="Krave Microgreens Admin"
+              width={120}
+              height={44}
+              className="h-9 w-auto object-contain"
+              priority
+            />
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-5 space-y-1.5">
         {NAV.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
@@ -36,16 +42,16 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
                 isActive
-                  ? "bg-green-500/20 text-green-300 border border-green-500/20"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                  ? "bg-[#1e5631] text-white shadow-md shadow-green-900/10"
+                  : "text-[#4a6b57] hover:text-[#143623] hover:bg-[#f0f7f2]"
               }`}
             >
               <span className="text-base">{item.icon}</span>
               {item.label}
               {isActive && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-green-400" />
+                <span className="ml-auto w-2 h-2 rounded-full bg-[#6cc24a]" />
               )}
             </Link>
           );
@@ -53,11 +59,11 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-white/10">
+      <div className="px-4 py-4 border-t border-[#e2efe6] bg-[#f8faf5]/30">
         <form action="/api/auth/logout" method="POST">
           <button
             type="submit"
-            className="w-full flex items-center gap-2 text-gray-500 hover:text-red-400 text-sm px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-150"
+            className="w-full flex items-center gap-2 text-[#4a6b57] hover:text-red-600 font-semibold text-sm px-3.5 py-2.5 rounded-xl hover:bg-red-50 transition-all duration-150"
           >
             <span>🚪</span> Sign Out
           </button>

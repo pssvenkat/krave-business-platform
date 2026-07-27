@@ -1,6 +1,5 @@
 {
   "framework": "nextjs",
   "buildCommand": "cd ../.. && pnpm install && pnpm turbo run build --filter=admin",
-  "outputDirectory": ".next",
-  "installCommand": "echo skip"
+  "outputDirectory": ".next"
 }

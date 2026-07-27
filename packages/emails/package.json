@@ -1,0 +1,30 @@
+{
+  "name": "@krave/emails",
+  "version": "0.1.0",
+  "private": true,
+  "description": "react-email templates and Resend integration for the Krave Platform",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./templates/*": "./src/templates/*.tsx",
+    "./send": "./src/send.ts"
+  },
+  "dependencies": {
+    "resend": "^4.0.0",
+    "@react-email/components": "^0.0.31",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@krave/config": "workspace:*",
+    "@types/node": "^20.14.0",
+    "@types/react": "^19.0.0",
+    "react-email": "^3.0.0",
+    "typescript": "^5.6.0"
+  },
+  "scripts": {
+    "dev": "react-email dev --dir src/templates --port 3200",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src/ --max-warnings 0"
+  }
+}

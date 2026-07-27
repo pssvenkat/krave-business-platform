@@ -1,0 +1,32 @@
+{
+  "name": "admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@krave/analytics": "workspace:*",
+    "@krave/auth": "workspace:*",
+    "@krave/database": "workspace:*",
+    "@krave/emails": "workspace:*",
+    "@krave/types": "workspace:*",
+    "@krave/ui": "workspace:*",
+    "@krave/utils": "workspace:*",
+    "@krave/validation": "workspace:*",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@krave/config": "workspace:*",
+    "@types/node": "^20.14.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.6.0"
+  }
+}

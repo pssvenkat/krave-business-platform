@@ -1,0 +1,6 @@
+{
+  "buildCommand": "turbo build --filter=admin",
+  "installCommand": "pnpm install --filter admin...",
+  "framework": "nextjs",
+  "outputDirectory": ".next"
+}

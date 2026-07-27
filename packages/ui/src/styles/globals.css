@@ -1,0 +1,231 @@
+@import "tailwindcss";
+
+/* ─── Krave Design System – CSS Variables ─────────────────────────────────
+   Based on shadcn/ui New York style with Krave's green brand palette.
+   ──────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root {
+    /* Backgrounds */
+    --background: 0 0% 100%;
+    --foreground: 150 30% 10%;
+
+    /* Card */
+    --card: 0 0% 100%;
+    --card-foreground: 150 30% 10%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 30% 10%;
+
+    /* Primary – Krave Green */
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary */
+    --secondary: 150 20% 94%;
+    --secondary-foreground: 150 30% 10%;
+
+    /* Muted */
+    --muted: 150 10% 95%;
+    --muted-foreground: 150 10% 45%;
+
+    /* Accent */
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border & Ring */
+    --border: 150 10% 88%;
+    --input: 150 10% 88%;
+    --ring: 142 76% 36%;
+
+    /* Border Radius */
+    --radius: 0.5rem;
+
+    /* Chart Colors */
+    --chart-1: 142 76% 36%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    /* Dark mode – Deep Forest Theme */
+    --background: 150 30% 6%;
+    --foreground: 150 10% 95%;
+
+    --card: 150 25% 9%;
+    --card-foreground: 150 10% 95%;
+
+    --popover: 150 25% 9%;
+    --popover-foreground: 150 10% 95%;
+
+    --primary: 142 76% 46%;
+    --primary-foreground: 150 30% 6%;
+
+    --secondary: 150 20% 15%;
+    --secondary-foreground: 150 10% 90%;
+
+    --muted: 150 20% 15%;
+    --muted-foreground: 150 10% 55%;
+
+    --accent: 142 76% 46%;
+    --accent-foreground: 150 30% 6%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 20% 18%;
+    --input: 150 20% 18%;
+    --ring: 142 76% 46%;
+
+    --chart-1: 142 76% 46%;
+    --chart-2: 160 84% 49%;
+    --chart-3: 197 37% 34%;
+    --chart-4: 43 74% 56%;
+    --chart-5: 27 87% 57%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus visible ring */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* ─── Custom Utilities ────────────────────────────────────────────────────── */
+
+@layer utilities {
+  /* Glass effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Krave brand gradient */
+  .krave-gradient {
+    background: linear-gradient(135deg, #1a3c2e 0%, #14532d 50%, #052e16 100%);
+  }
+
+  /* Animated gradient */
+  .animated-gradient {
+    background: linear-gradient(
+      270deg,
+      #22c55e,
+      #16a34a,
+      #15803d,
+      #14532d
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      transparent 100%
+    );
+    animation: shimmerAnim 1.5s infinite;
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmerAnim {
+  to { left: 100%; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out both;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.4s ease-out both;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out both;
+  }
+
+  .animate-pulse-green {
+    animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}

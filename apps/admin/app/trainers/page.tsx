@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Sidebar } from "../components/sidebar";
+import { TrainerActions } from "./trainer-actions";
 
 export const metadata = { title: "Trainers | Krave Admin" };
 
@@ -68,9 +69,9 @@ export default async function TrainersPage() {
         <div className="p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {trainers.map((t: Record<string, any>) => {
-              const isExternal = t.image_url?.startsWith("http");
+              const isExternal = t.image_url?.startsWith("http") || t.image_url?.startsWith("data:");
               let imgPath = t.image_url || "/trainer.jpg";
-              if (imgPath && !imgPath.startsWith("http") && !imgPath.includes(".")) {
+              if (imgPath && !imgPath.startsWith("http") && !imgPath.startsWith("data:") && !imgPath.includes(".")) {
                 imgPath = `${imgPath.startsWith("/") ? "" : "/"}${imgPath}.jpg`;
               }
 
@@ -117,12 +118,7 @@ export default async function TrainersPage() {
                   </div>
 
                   <div className="pt-4 border-t border-[#e2efe6] flex justify-end">
-                    <Link
-                      href={`/trainers/${t.id}/edit`}
-                      className="bg-white border border-[#e2efe6] hover:bg-[#f0f7f2] text-[#1e5631] font-bold text-xs px-4 py-2 rounded-xl transition-all"
-                    >
-                      ✏️ Edit Trainer Profile
-                    </Link>
+                    <TrainerActions trainerId={t.id} trainerName={t.name} />
                   </div>
                 </div>
               );

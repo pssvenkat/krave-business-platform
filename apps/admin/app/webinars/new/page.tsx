@@ -44,6 +44,24 @@ export default function NewWebinarPage() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      setError("Session expired. Please sign in again.");
+      setLoading(false);
+      return;
+    }
+
+    // Ensure profile row exists to satisfy foreign key constraint on created_by
+    await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        email: user.email ?? "",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+
     const { error: insertError, data: webinar } = await supabase
       .from("webinars")
       .insert({
@@ -58,6 +76,7 @@ export default function NewWebinarPage() {
           ? new Date(data.registrationDeadline).toISOString()
           : null,
         status: "draft",
+        created_by: user.id,
       })
       .select("id")
       .single();

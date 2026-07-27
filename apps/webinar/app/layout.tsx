@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { PostHogProvider } from "@krave/analytics/provider";
 
-import "@krave/ui/styles";
+import "@krave/ui/styles/globals.css";
+
 
 const inter = Inter({
   subsets: ["latin"],

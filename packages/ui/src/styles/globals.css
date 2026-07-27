@@ -1,8 +1,67 @@
 @import "tailwindcss";
 
-/* ─── Krave Design System – CSS Variables ─────────────────────────────────
-   Based on shadcn/ui New York style with Krave's green brand palette.
-   ──────────────────────────────────────────────────────────────────────── */
+/* ─── Tailwind v4: Map CSS Variables → Theme Tokens ─────────────────────────
+   @theme inline tells Tailwind v4 to expose CSS custom properties as utilities.
+   This is what makes `bg-background`, `text-foreground`, `border-border`, etc. work.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@theme inline {
+  /* Backgrounds */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  /* Card */
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  /* Popover */
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  /* Primary – Krave Green */
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  /* Secondary */
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  /* Muted */
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  /* Accent */
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  /* Destructive */
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  /* Border & Ring */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Border Radius */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  /* Font */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  /* Custom Animations */
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-slide-in-left: slide-in-left 0.4s ease-out both;
+  --animate-scale-in: scale-in 0.3s ease-out both;
+  --animate-gradient-shift: gradient-shift 8s ease infinite;
+  --animate-pulse-green: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ─── CSS Custom Properties ──────────────────────────────────────────────────
+   Raw HSL values (no hsl() wrapper) for use with the @theme inline above.
+   ──────────────────────────────────────────────────────────────────────────── */
 
 @layer base {
   :root {
@@ -45,13 +104,6 @@
 
     /* Border Radius */
     --radius: 0.5rem;
-
-    /* Chart Colors */
-    --chart-1: 142 76% 36%;
-    --chart-2: 160 84% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
   }
 
   .dark {
@@ -83,87 +135,103 @@
     --border: 150 20% 18%;
     --input: 150 20% 18%;
     --ring: 142 76% 46%;
-
-    --chart-1: 142 76% 46%;
-    --chart-2: 160 84% 49%;
-    --chart-3: 197 37% 34%;
-    --chart-4: 43 74% 56%;
-    --chart-5: 27 87% 57%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
   }
 
-  /* Focus visible ring */
   :focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    outline: none;
+    ring-width: 2px;
+    ring-color: hsl(var(--ring));
+    ring-offset-width: 2px;
+    ring-offset-color: hsl(var(--background));
   }
 }
 
-/* ─── Custom Utilities ────────────────────────────────────────────────────── */
+/* ─── Keyframes ──────────────────────────────────────────────────────────────  */
 
-@layer utilities {
-  /* Glass effect */
-  .glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  .glass-dark {
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
 
-  /* Gradient text */
-  .gradient-text {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
 
-  /* Krave brand gradient */
-  .krave-gradient {
-    background: linear-gradient(135deg, #1a3c2e 0%, #14532d 50%, #052e16 100%);
-  }
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 
-  /* Animated gradient */
-  .animated-gradient {
-    background: linear-gradient(
-      270deg,
-      #22c55e,
-      #16a34a,
-      #15803d,
-      #14532d
-    );
-    background-size: 400% 400%;
-    animation: gradientShift 8s ease infinite;
-  }
+@keyframes shimmer-anim {
+  to { left: 100%; }
+}
 
-  /* Shimmer loading effect */
-  .shimmer {
-    position: relative;
-    overflow: hidden;
-  }
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+}
 
-  .shimmer::after {
+/* ─── Custom Utilities ───────────────────────────────────────────────────────  */
+
+@utility glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@utility glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@utility gradient-text {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@utility krave-gradient {
+  background: linear-gradient(135deg, #1a3c2e 0%, #14532d 50%, #052e16 100%);
+}
+
+@utility animated-gradient {
+  background: linear-gradient(270deg, #22c55e, #16a34a, #15803d, #14532d);
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@utility shimmer {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
     content: "";
     position: absolute;
     top: 0;
@@ -176,56 +244,6 @@
       rgba(255, 255, 255, 0.08) 50%,
       transparent 100%
     );
-    animation: shimmerAnim 1.5s infinite;
-  }
-}
-
-/* ─── Animations ─────────────────────────────────────────────────────────── */
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes shimmerAnim {
-  to { left: 100%; }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-16px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-}
-
-@layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.4s ease-out both;
-  }
-
-  .animate-slide-in-left {
-    animation: slideInLeft 0.4s ease-out both;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.3s ease-out both;
-  }
-
-  .animate-pulse-green {
-    animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: shimmer-anim 1.5s infinite;
   }
 }

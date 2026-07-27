@@ -18,12 +18,13 @@
     "@krave/ui": "workspace:*",
     "@krave/utils": "workspace:*",
     "@krave/validation": "workspace:*",
-    "next": "^16.0.0",
+    "next": "^16.2.12",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@krave/config": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^20.14.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

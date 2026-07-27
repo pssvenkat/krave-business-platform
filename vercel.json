@@ -1,6 +1,5 @@
 {
   "framework": "nextjs",
   "buildCommand": "pnpm turbo run build --filter=webinar",
-  "outputDirectory": "apps/webinar/.next",
-  "installCommand": "pnpm install"
+  "outputDirectory": "apps/webinar/.next"
 }

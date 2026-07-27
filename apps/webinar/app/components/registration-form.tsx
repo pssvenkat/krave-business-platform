@@ -71,8 +71,11 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
     setTurnstileError(false);
   }, []);
 
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const isTurnstileRequired = !!siteKey && siteKey.trim().length > 0 && siteKey !== "1x00000000000000000000AA";
+
   const onSubmit = async (data: FormData) => {
-    if (!turnstileToken) {
+    if (isTurnstileRequired && !turnstileToken) {
       setTurnstileError(true);
       return;
     }
@@ -107,8 +110,6 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
       setIsSubmitting(false);
     }
   };
-
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA"; // dev key
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
@@ -180,13 +181,15 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
       </Field>
 
       {/* Instagram */}
-      <Field label="Instagram Handle" error={errors.instagram?.message}>
+      <Field label="Instagram Handle (Optional)">
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+            @
+          </span>
           <input
             {...register("instagram")}
-            placeholder="krave_microgreens"
-            className={`${inputClass} pl-8`}
+            placeholder="yourusername"
+            className={`${inputClass} pl-9`}
             id="reg-instagram"
           />
         </div>
@@ -208,20 +211,22 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
         </select>
       </Field>
 
-      {/* Turnstile */}
-      <div>
-        <Turnstile
-          siteKey={siteKey}
-          onVerify={handleTurnstileVerify}
-          onExpire={() => setTurnstileToken(null)}
-          onError={() => setTurnstileError(true)}
-        />
-        {turnstileError && (
-          <p className="mt-1 text-xs text-red-500">
-            ⚠ Please complete the security check
-          </p>
-        )}
-      </div>
+      {/* Turnstile (rendered only if Turnstile site key is configured) */}
+      {isTurnstileRequired && (
+        <div>
+          <Turnstile
+            siteKey={siteKey}
+            onVerify={handleTurnstileVerify}
+            onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken("bypass-dev")}
+          />
+          {turnstileError && (
+            <p className="mt-1 text-xs text-red-500">
+              ⚠ Please complete the security check
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Terms */}
       <div>
@@ -249,26 +254,22 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
         </div>
       )}
 
-      {/* Submit */}
+      {/* Submit button */}
       <button
         type="submit"
         id="reg-submit-btn"
         disabled={isSubmitting}
-        className="w-full bg-green-600 hover:bg-green-500 disabled:bg-green-800 disabled:cursor-not-allowed text-white font-black text-lg py-4 rounded-xl transition-all duration-200 shadow-lg shadow-green-900/30 hover:-translate-y-0.5 active:scale-95 disabled:translate-y-0 flex items-center justify-center gap-2"
+        className="w-full py-4 px-6 rounded-2xl bg-[#1e5631] hover:bg-[#2d7d46] text-white font-extrabold text-lg transition-all duration-200 shadow-lg shadow-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {isSubmitting ? (
           <>
             <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Reserving your spot…
+            Registering…
           </>
         ) : (
-          "🎯 Reserve My Free Spot"
+          "Reserve My Free Seat →"
         )}
       </button>
-
-      <p className="text-center text-gray-400 text-xs">
-        🔒 Your information is secure and will never be sold
-      </p>
     </form>
   );
 }

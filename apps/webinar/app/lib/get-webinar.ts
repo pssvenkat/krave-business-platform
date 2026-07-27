@@ -19,11 +19,14 @@ export interface WebinarData {
 
 export async function getLatestWebinar(): Promise<WebinarData> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Use service role key if available server-side to bypass RLS, fallback to anon key
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (supabaseUrl && supabaseKey) {
     try {
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: { persistSession: false },
+      });
       
       const activeId = process.env.NEXT_PUBLIC_ACTIVE_WEBINAR_ID;
       
@@ -32,13 +35,13 @@ export async function getLatestWebinar(): Promise<WebinarData> {
       if (activeId && activeId !== "placeholder") {
         query = query.eq("id", activeId);
       } else {
-        // Query the latest webinar created in Supabase
+        // Query published or latest webinar created in Supabase
         query = query.order("created_at", { ascending: false }).limit(1);
       }
 
-      const { data } = await query;
+      const { data, error } = await query;
 
-      if (data && data.length > 0) {
+      if (!error && data && data.length > 0) {
         const row = data[0];
         const scheduledDate = new Date(row.scheduled_at);
         

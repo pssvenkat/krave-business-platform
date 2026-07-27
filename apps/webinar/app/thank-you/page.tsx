@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { WEBINAR } from "../content";
+import { getLatestWebinar } from "../lib/get-webinar";
+import { LocalizedTime } from "../components/localized-time";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "You're Registered! | Krave Microgreens Webinar",
@@ -16,6 +20,7 @@ interface Props {
 export default async function ThankYouPage({ searchParams }: Props) {
   const params = await searchParams;
   const name = params.name ?? "there";
+  const webinar = await getLatestWebinar();
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#edf6f0] via-[#f7fbf8] to-white flex items-center justify-center px-4 py-12">
@@ -65,21 +70,50 @@ export default async function ThankYouPage({ searchParams }: Props) {
             {/* Webinar details box */}
             <div className="bg-[#f0f7f2] border border-[#d0e6d6] rounded-2xl p-5">
               <p className="text-[#1e5631] font-bold text-xs mb-3 uppercase tracking-wider">
-                Webinar Details
+                Confirmed Webinar Details
               </p>
-              <div className="space-y-2.5 text-sm">
-                {[
-                  { icon: "📋", label: "Topic", value: WEBINAR.title },
-                  { icon: "🗓️", label: "Date", value: WEBINAR.date },
-                  { icon: "⏰", label: "Time", value: WEBINAR.time + " · " + WEBINAR.duration },
-                  { icon: "💻", label: "Where", value: "YouTube Live (link in your email)" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <span>{item.icon}</span>
-                    <span className="text-[#4a6b57] font-medium">{item.label}:</span>
-                    <span className="text-[#143623] font-bold">{item.value}</span>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">📋</span>
+                  <div>
+                    <span className="text-[#4a6b57] font-medium text-xs block">Topic</span>
+                    <span className="text-[#143623] font-black text-base">{webinar.title}</span>
                   </div>
-                ))}
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">🗓️</span>
+                  <div>
+                    <span className="text-[#4a6b57] font-medium text-xs block">Date & Time</span>
+                    <div className="text-[#143623] font-bold text-sm">
+                      <LocalizedTime dateISO={webinar.dateISO} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">⏳</span>
+                  <div>
+                    <span className="text-[#4a6b57] font-medium text-xs block">Duration</span>
+                    <span className="text-[#143623] font-bold text-sm">{webinar.duration}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">👨‍🏫</span>
+                  <div>
+                    <span className="text-[#4a6b57] font-medium text-xs block">Trainer</span>
+                    <span className="text-[#143623] font-bold text-sm">{webinar.speakerName}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="text-lg">💻</span>
+                  <div>
+                    <span className="text-[#4a6b57] font-medium text-xs block">Where</span>
+                    <span className="text-[#143623] font-bold text-sm">YouTube Live (link sent to your email)</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -95,7 +129,7 @@ export default async function ThankYouPage({ searchParams }: Props) {
             {/* CTAs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <a
-                href={WEBINAR.googleCalendarUrl}
+                href={webinar.googleCalendarUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 id="add-to-calendar-btn"
@@ -104,7 +138,7 @@ export default async function ThankYouPage({ searchParams }: Props) {
                 📅 Add to Calendar
               </a>
               <a
-                href={WEBINAR.whatsappCommunityUrl}
+                href={webinar.whatsappCommunityUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 id="join-whatsapp-btn"
@@ -123,12 +157,12 @@ export default async function ThankYouPage({ searchParams }: Props) {
                 {[
                   {
                     label: "WhatsApp",
-                    href: `https://api.whatsapp.com/send?text=${encodeURIComponent(`🌱 I just registered for a free webinar on how to start a microgreens business from home! Join me: https://webinar.kravemicrogreens.in`)}`,
+                    href: `https://api.whatsapp.com/send?text=${encodeURIComponent(`🌱 I just registered for "${webinar.title}"! Join me: https://webinar.kravemicrogreens.in`)}`,
                     bg: "bg-[#25D366]",
                   },
                   {
                     label: "Twitter / X",
-                    href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`🌱 Joining a FREE webinar on starting a profitable microgreens business! Register here: https://webinar.kravemicrogreens.in`)}`,
+                    href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`🌱 Joining "${webinar.title}"! Register here: https://webinar.kravemicrogreens.in`)}`,
                     bg: "bg-gray-900",
                   },
                 ].map((s) => (

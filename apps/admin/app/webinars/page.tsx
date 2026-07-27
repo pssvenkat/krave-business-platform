@@ -19,7 +19,7 @@ async function getWebinars() {
 
   const { data: webinars } = await supabase
     .from("webinars")
-    .select("id, title, scheduled_at, status, max_seats")
+    .select("id, title, scheduled_at, status, max_registrations")
     .order("scheduled_at", { ascending: false });
 
   // Count registrations per webinar
@@ -114,7 +114,7 @@ export default async function WebinarsPage() {
                         {countMap[w.id as string] ?? 0}
                       </p>
                       <p className="text-[#6b8e78] text-xs font-bold uppercase tracking-wider">
-                        / {w.max_seats as number ?? 500} seats
+                        / {(w.max_registrations as number) ?? 500} seats
                       </p>
                     </div>
                   </div>

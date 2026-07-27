@@ -52,7 +52,7 @@ export default function NewWebinarPage() {
         speaker_name: data.speakerName || "Venkat Srinivasan",
         scheduled_at: new Date(data.scheduledAt).toISOString(),
         duration_minutes: data.durationMinutes,
-        max_seats: data.maxSeats,
+        max_registrations: data.maxSeats,
         youtube_video_id: data.youtubeVideoId ?? null,
         registration_deadline: data.registrationDeadline
           ? new Date(data.registrationDeadline).toISOString()

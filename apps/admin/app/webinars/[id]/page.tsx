@@ -70,7 +70,7 @@ export default async function WebinarDetailPage({ params }: Props) {
                   day: "numeric", month: "short", year: "numeric",
                 }),
               },
-              { label: "Registrations", value: `${count} / ${webinar.max_seats ?? 500}` },
+              { label: "Registrations", value: `${count} / ${webinar.max_registrations ?? 500}` },
               { label: "Duration", value: `${webinar.duration_minutes} min` },
             ].map((item) => (
               <div key={item.label} className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm">

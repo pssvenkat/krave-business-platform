@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 const PROTECTED_PREFIXES = [
+  "/",
   "/dashboard",
   "/webinars",
   "/trainers",
@@ -45,23 +46,32 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: always use getUser() — validates session server-side
+  // Validate session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
+  // Handle root "/" path explicitly
+  if (pathname === "/") {
+    if (user) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    } else {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
+
   // Redirect unauthenticated → /login
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
+  const isProtected = PROTECTED_PREFIXES.some((p) => p !== "/" && pathname.startsWith(p));
   if (isProtected && !user) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated → /dashboard (from /login or /)
-  if ((pathname === "/login" || pathname === "/") && user) {
+  // Redirect authenticated on /login → /dashboard
+  if (pathname === "/login" && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

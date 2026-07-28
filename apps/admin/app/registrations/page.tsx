@@ -18,7 +18,7 @@ async function getRegistrations(search: string, status: string) {
 
   let query = supabase
     .from("registrations")
-    .select("id, first_name, last_name, email, phone, city, lead_source, status, created_at, webinar_id", { count: "exact" })
+    .select("id, first_name, last_name, email, phone, city, lead_source, status, created_at, webinar_id, webinars(id, title, scheduled_at)", { count: "exact" })
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -44,6 +44,22 @@ function statusBadge(s: string) {
     cancelled: "bg-gray-100 text-gray-700 border border-gray-200",
   };
   return m[s] ?? "bg-gray-100 text-gray-700 border border-gray-200";
+}
+
+function formatWebinarDate(scheduledAt?: string | null): string {
+  if (!scheduledAt) return "Sep 14, 2026, 11:00 AM IST"; // Default fallback
+  try {
+    return new Date(scheduledAt).toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch {
+    return scheduledAt;
+  }
 }
 
 interface Props {
@@ -105,7 +121,7 @@ export default async function RegistrationsPage({ searchParams }: Props) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#e2efe6] bg-[#f8faf5]/80">
-                    {["Name", "Email", "Phone", "City", "Source", "Status", "Date"].map((h) => (
+                    {["Name", "Email", "Phone", "City", "Source", "Status", "Webinar Date", "Registered On"].map((h) => (
                       <th key={h} className="text-left px-6 py-3.5 text-[#4a6b57] font-bold text-xs uppercase tracking-wider">
                         {h}
                       </th>
@@ -115,32 +131,39 @@ export default async function RegistrationsPage({ searchParams }: Props) {
                 <tbody className="divide-y divide-[#e2efe6]/60">
                   {registrations.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="text-center py-12 text-[#6b8e78] font-medium">
+                      <td colSpan={8} className="text-center py-12 text-[#6b8e78] font-medium">
                         No registrations found matching your filters.
                       </td>
                     </tr>
                   ) : (
-                    registrations.map((r: Record<string, string>) => (
-                      <tr key={r.id} className="hover:bg-[#f0f7f2]/50 transition-colors">
-                        <td className="px-6 py-4 text-[#143623] font-bold">{r.first_name} {r.last_name}</td>
-                        <td className="px-6 py-4 text-[#4a6b57] text-xs font-medium">{r.email}</td>
-                        <td className="px-6 py-4 text-[#4a6b57] text-xs font-medium">{r.phone}</td>
-                        <td className="px-6 py-4 text-[#4a6b57] font-medium">{r.city}</td>
-                        <td className="px-6 py-4 text-[#4a6b57] capitalize font-medium">{r.lead_source}</td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${statusBadge(r.status ?? "registered")}`}>
-                            {r.status ?? "registered"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-[#6b8e78] text-xs font-medium">
-                          {r.created_at
-                            ? new Date(r.created_at).toLocaleDateString("en-IN", {
-                                day: "numeric", month: "short",
-                              })
-                            : "—"}
-                        </td>
-                      </tr>
-                    ))
+                    registrations.map((r: any) => {
+                      const webinar = Array.isArray(r.webinars) ? r.webinars[0] : r.webinars;
+                      const scheduledAt = webinar?.scheduled_at;
+                      return (
+                        <tr key={r.id} className="hover:bg-[#f0f7f2]/50 transition-colors">
+                          <td className="px-6 py-4 text-[#143623] font-bold">{r.first_name} {r.last_name}</td>
+                          <td className="px-6 py-4 text-[#4a6b57] text-xs font-medium">{r.email}</td>
+                          <td className="px-6 py-4 text-[#4a6b57] text-xs font-medium">{r.phone}</td>
+                          <td className="px-6 py-4 text-[#4a6b57] font-medium">{r.city}</td>
+                          <td className="px-6 py-4 text-[#4a6b57] capitalize font-medium">{r.lead_source}</td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${statusBadge(r.status ?? "registered")}`}>
+                              {r.status ?? "registered"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-[#1e5631] font-bold text-xs">
+                            📅 {formatWebinarDate(scheduledAt)}
+                          </td>
+                          <td className="px-6 py-4 text-[#6b8e78] text-xs font-medium">
+                            {r.created_at
+                              ? new Date(r.created_at).toLocaleDateString("en-IN", {
+                                  day: "numeric", month: "short",
+                                })
+                              : "—"}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

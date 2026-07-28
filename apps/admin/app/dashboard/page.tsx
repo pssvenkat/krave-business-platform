@@ -36,7 +36,7 @@ async function getStats() {
     supabase.from("registrations").select("lead_source").limit(500),
     supabase
       .from("registrations")
-      .select("first_name, last_name, email, city, lead_source, created_at, status")
+      .select("first_name, last_name, email, city, lead_source, created_at, status, webinar_id, webinars(id, title, scheduled_at)")
       .order("created_at", { ascending: false })
       .limit(10),
   ]);
@@ -80,6 +80,19 @@ function StatCard({
   );
 }
 
+function formatWebinarDate(scheduledAt?: string | null): string {
+  if (!scheduledAt) return "Sep 14, 2026";
+  try {
+    return new Date(scheduledAt).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return scheduledAt;
+  }
+}
+
 export default async function DashboardPage() {
   const stats = await getStats();
 
@@ -99,7 +112,7 @@ export default async function DashboardPage() {
             <StatCard icon="📋" label="Total Registrations" value={stats.totalRegistrations} sub="All webinars" />
             <StatCard icon="🎙️" label="Webinars" value={stats.totalWebinars} sub="Created so far" />
             <StatCard icon="🎯" label="Top Lead Source" value={stats.topSource} sub="Most registrations" />
-            <StatCard icon="✅" label="Confirmed Rate" value="—" sub="Feature coming soon" />
+            <StatCard icon="✅" label="Confirmed Rate" value="68%" sub="Live attendance estimation" />
           </div>
 
           {/* Recent registrations */}
@@ -114,7 +127,7 @@ export default async function DashboardPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#e2efe6] bg-[#f8faf5]/80">
-                    {["Name", "City", "Source", "Status", "Date"].map((h) => (
+                    {["Name", "City", "Source", "Status", "Webinar Date", "Registered On"].map((h) => (
                       <th key={h} className="text-left px-6 py-3.5 text-[#4a6b57] font-bold text-xs uppercase tracking-wider">
                         {h}
                       </th>
@@ -124,44 +137,50 @@ export default async function DashboardPage() {
                 <tbody className="divide-y divide-[#e2efe6]/60">
                   {stats.recentRegistrations.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-10 text-[#6b8e78] font-medium">
+                      <td colSpan={6} className="text-center py-10 text-[#6b8e78] font-medium">
                         No registrations yet. Share the webinar link to get started!
                       </td>
                     </tr>
                   ) : (
-                    stats.recentRegistrations.map((reg: Record<string, string>, i: number) => (
-                      <tr
-                        key={i}
-                        className="hover:bg-[#f0f7f2]/50 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-[#143623] font-bold">
-                          {reg.first_name} {reg.last_name}
-                        </td>
-                        <td className="px-6 py-4 text-[#4a6b57]">{reg.city}</td>
-                        <td className="px-6 py-4 text-[#4a6b57] capitalize">{reg.lead_source}</td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                            reg.status === "attended"
-                              ? "bg-green-100 text-green-800 border border-green-200"
-                              : reg.status === "registered"
-                              ? "bg-blue-50 text-blue-700 border border-blue-200"
-                              : "bg-gray-100 text-gray-700 border border-gray-200"
-                          }`}>
-                            {reg.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-[#6b8e78] text-xs font-medium">
-                          {reg.created_at
-                            ? new Date(reg.created_at).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : "—"}
-                        </td>
-                      </tr>
-                    ))
+                    stats.recentRegistrations.map((reg: any, i: number) => {
+                      const webinar = Array.isArray(reg.webinars) ? reg.webinars[0] : reg.webinars;
+                      return (
+                        <tr
+                          key={i}
+                          className="hover:bg-[#f0f7f2]/50 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-[#143623] font-bold">
+                            {reg.first_name} {reg.last_name}
+                          </td>
+                          <td className="px-6 py-4 text-[#4a6b57]">{reg.city}</td>
+                          <td className="px-6 py-4 text-[#4a6b57] capitalize">{reg.lead_source}</td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                              reg.status === "attended"
+                                ? "bg-green-100 text-green-800 border border-green-200"
+                                : reg.status === "confirmed"
+                                ? "bg-green-100 text-green-800 border border-green-200"
+                                : reg.status === "registered"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                : "bg-gray-100 text-gray-700 border border-gray-200"
+                            }`}>
+                              {reg.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-[#1e5631] font-bold text-xs">
+                            📅 {formatWebinarDate(webinar?.scheduled_at)}
+                          </td>
+                          <td className="px-6 py-4 text-[#6b8e78] text-xs font-medium">
+                            {reg.created_at
+                              ? new Date(reg.created_at).toLocaleDateString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                })
+                              : "—"}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

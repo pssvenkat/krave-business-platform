@@ -2,10 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Sidebar } from "../components/sidebar";
+import { ExportRegistrationsButton } from "./export-button";
 
 export const metadata = { title: "Registrations | Krave Admin" };
 
-async function getRegistrations(search: string, status: string) {
+async function getRegistrationsData(search: string, status: string, webinarId: string) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,13 +17,21 @@ async function getRegistrations(search: string, status: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Fetch available webinars for the Webinar Date filter dropdown
+  const { data: webinars } = await supabase
+    .from("webinars")
+    .select("id, title, scheduled_at")
+    .order("scheduled_at", { ascending: false });
+
+  // Query registrations
   let query = supabase
     .from("registrations")
     .select("id, first_name, last_name, email, phone, city, lead_source, status, created_at, webinar_id, webinars(id, title, scheduled_at)", { count: "exact" })
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(300);
 
   if (status && status !== "all") query = query.eq("status", status);
+  if (webinarId && webinarId !== "all") query = query.eq("webinar_id", webinarId);
   if (search) {
     query = query.or(
       `first_name.ilike.%${search}%,last_name.ilike.%${search}%,city.ilike.%${search}%`
@@ -30,7 +39,11 @@ async function getRegistrations(search: string, status: string) {
   }
 
   const { data, count } = await query;
-  return { registrations: data ?? [], count: count ?? 0 };
+  return {
+    registrations: data ?? [],
+    count: count ?? 0,
+    webinars: webinars ?? [],
+  };
 }
 
 const STATUS_OPTIONS = ["all", "registered", "confirmed", "attended", "no-show", "cancelled"];
@@ -63,32 +76,37 @@ function formatWebinarDate(scheduledAt?: string | null): string {
 }
 
 interface Props {
-  searchParams: Promise<{ q?: string; status?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; webinar_id?: string }>;
 }
 
 export default async function RegistrationsPage({ searchParams }: Props) {
   const params = await searchParams;
   const search = params.q ?? "";
   const status = params.status ?? "all";
-  const { registrations, count } = await getRegistrations(search, status);
+  const selectedWebinarId = params.webinar_id ?? "all";
+
+  const { registrations, count, webinars } = await getRegistrationsData(search, status, selectedWebinarId);
 
   return (
     <div className="flex min-h-screen bg-[#f8faf5]">
       <Sidebar />
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex items-center justify-between">
+        <div className="bg-white border-b border-[#e2efe6] px-8 py-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-[#143623]">Registrations</h1>
             <p className="text-[#4a6b57] text-sm mt-0.5 font-medium">{count} total registrations</p>
           </div>
+          <div className="flex items-center gap-3">
+            <ExportRegistrationsButton registrations={registrations} />
+          </div>
         </div>
 
         <div className="p-8 space-y-5">
-          {/* Filters */}
-          <div className="flex flex-wrap gap-3">
+          {/* Filters Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
             {/* Search */}
-            <form className="flex-1 min-w-64">
+            <form className="md:col-span-4">
               <input
                 name="q"
                 defaultValue={search}
@@ -97,13 +115,35 @@ export default async function RegistrationsPage({ searchParams }: Props) {
               />
             </form>
 
-            {/* Status filter */}
-            <div className="flex gap-2 flex-wrap">
+            {/* Filter by Webinar Date Dropdown */}
+            <div className="md:col-span-4">
+              <form method="GET" className="flex items-center gap-2">
+                {search && <input type="hidden" name="q" value={search} />}
+                {status !== "all" && <input type="hidden" name="status" value={status} />}
+                <select
+                  name="webinar_id"
+                  defaultValue={selectedWebinarId}
+                  onChange={(e) => e.target.form?.submit()}
+                  id="webinar-date-filter"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all shadow-xs"
+                >
+                  <option value="all">🗓️ All Webinar Dates</option>
+                  {webinars.map((w: any) => (
+                    <option key={w.id} value={w.id}>
+                      📅 {formatWebinarDate(w.scheduled_at)} — {w.title}
+                    </option>
+                  ))}
+                </select>
+              </form>
+            </div>
+
+            {/* Status Filter Badges */}
+            <div className="md:col-span-4 flex gap-1.5 flex-wrap justify-end">
               {STATUS_OPTIONS.map((s) => (
                 <a
                   key={s}
-                  href={`?status=${s}${search ? `&q=${search}` : ""}`}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                  href={`?status=${s}${search ? `&q=${search}` : ""}${selectedWebinarId !== "all" ? `&webinar_id=${selectedWebinarId}` : ""}`}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
                     status === s
                       ? "bg-[#1e5631] text-white shadow-sm"
                       : "bg-white border border-[#e2efe6] text-[#4a6b57] hover:text-[#143623] hover:bg-[#f0f7f2]"
@@ -132,7 +172,7 @@ export default async function RegistrationsPage({ searchParams }: Props) {
                   {registrations.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="text-center py-12 text-[#6b8e78] font-medium">
-                        No registrations found matching your filters.
+                        No registrations found matching your selected filters.
                       </td>
                     </tr>
                   ) : (

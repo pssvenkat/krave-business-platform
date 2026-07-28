@@ -21,11 +21,20 @@ async function getLeadData(id: string) {
   try {
     const { data: reg } = await supabase
       .from("registrations")
-      .select("id, first_name, last_name, email, phone, city, lead_source, status, created_at")
+      .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, instagram_username, created_at")
       .eq("id", id)
       .maybeSingle();
 
     if (reg) {
+      let stage = "new";
+      if (typeof reg.instagram_username === "string" && reg.instagram_username.startsWith("stage:")) {
+        stage = reg.instagram_username.replace("stage:", "");
+      } else if (reg.status === "registered") stage = "new";
+      else if (reg.status === "confirmed") stage = "qualified";
+      else if (reg.status === "attended") stage = "converted";
+      else if (reg.status === "cancelled") stage = "lost";
+      else if (["new","contacted","qualified","converted","lost"].includes(reg.status)) stage = reg.status;
+
       return {
         id: reg.id,
         firstName: reg.first_name || "",
@@ -33,9 +42,9 @@ async function getLeadData(id: string) {
         email: reg.email || "",
         phone: reg.phone || "",
         city: reg.city || "",
-        occupation: "Microgreens Grower",
+        occupation: reg.occupation || "Microgreens Grower",
         leadSource: reg.lead_source || "webinar",
-        stage: "qualified",
+        stage: stage,
         notes: `Registered for live webinar from ${reg.city}. Source: ${reg.lead_source || "webinar"}.`,
       };
     }

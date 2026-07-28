@@ -48,6 +48,7 @@ export async function PUT(
         city: city,
         occupation: occupation,
         lead_source: leadSource,
+        instagram_username: `stage:${stage}`,
         status: enumStatus,
         updated_at: new Date().toISOString(),
       })

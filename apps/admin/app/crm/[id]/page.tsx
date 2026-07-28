@@ -55,7 +55,9 @@ export default async function LeadDetailPage({ params }: PageProps) {
   if (!lead) notFound();
 
   let stage = "new";
-  if (lead.status === "registered") stage = "new";
+  if (typeof lead.instagram_username === "string" && lead.instagram_username.startsWith("stage:")) {
+    stage = lead.instagram_username.replace("stage:", "");
+  } else if (lead.status === "registered") stage = "new";
   else if (lead.status === "confirmed") stage = "qualified";
   else if (lead.status === "attended") stage = "converted";
   else if (lead.status === "cancelled") stage = "lost";

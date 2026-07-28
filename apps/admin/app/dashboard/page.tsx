@@ -1,60 +1,61 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 import { Sidebar } from "../components/sidebar";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata = {
   title: "Dashboard | Krave Admin",
 };
 
 async function getStats() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
+  const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: () => {},
-      },
-    }
+    { auth: { persistSession: false } }
   );
 
-  // Auth check
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  try {
+    // Parallel queries
+    const [
+      { count: totalRegistrations },
+      { count: totalWebinars },
+      { data: leadSources },
+      { data: recentRegistrations },
+    ] = await Promise.all([
+      supabase.from("registrations").select("*", { count: "exact", head: true }),
+      supabase.from("webinars").select("*", { count: "exact", head: true }),
+      supabase.from("registrations").select("lead_source").limit(500),
+      supabase
+        .from("registrations")
+        .select("first_name, last_name, email, city, lead_source, created_at, status, webinar_id, webinars(id, title, scheduled_at)")
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
 
-  // Parallel queries
-  const [
-    { count: totalRegistrations },
-    { count: totalWebinars },
-    { data: leadSources },
-    { data: recentRegistrations },
-  ] = await Promise.all([
-    supabase.from("registrations").select("*", { count: "exact", head: true }),
-    supabase.from("webinars").select("*", { count: "exact", head: true }),
-    supabase.from("registrations").select("lead_source").limit(500),
-    supabase
-      .from("registrations")
-      .select("first_name, last_name, email, city, lead_source, created_at, status, webinar_id, webinars(id, title, scheduled_at)")
-      .order("created_at", { ascending: false })
-      .limit(10),
-  ]);
+    // Lead source breakdown
+    const sourceMap: Record<string, number> = {};
+    (leadSources ?? []).forEach((r: { lead_source: string }) => {
+      const src = r.lead_source ?? "unknown";
+      sourceMap[src] = (sourceMap[src] ?? 0) + 1;
+    });
+    const topSource = Object.entries(sourceMap).sort((a, b) => b[1] - a[1])[0];
 
-  // Lead source breakdown
-  const sourceMap: Record<string, number> = {};
-  (leadSources ?? []).forEach((r: { lead_source: string }) => {
-    const src = r.lead_source ?? "unknown";
-    sourceMap[src] = (sourceMap[src] ?? 0) + 1;
-  });
-  const topSource = Object.entries(sourceMap).sort((a, b) => b[1] - a[1])[0];
-
-  return {
-    totalRegistrations: totalRegistrations ?? 0,
-    totalWebinars: totalWebinars ?? 0,
-    topSource: topSource ? `${topSource[0]} (${topSource[1]})` : "—",
-    recentRegistrations: recentRegistrations ?? [],
-  };
+    return {
+      totalRegistrations: totalRegistrations ?? 0,
+      totalWebinars: totalWebinars ?? 0,
+      topSource: topSource ? `${topSource[0]} (${topSource[1]})` : "—",
+      recentRegistrations: recentRegistrations ?? [],
+    };
+  } catch (err) {
+    console.error("Dashboard getStats error:", err);
+    return {
+      totalRegistrations: 0,
+      totalWebinars: 0,
+      topSource: "—",
+      recentRegistrations: [],
+    };
+  }
 }
 
 function StatCard({

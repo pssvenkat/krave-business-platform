@@ -12,8 +12,12 @@ import { createServerClient } from "@supabase/ssr";
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/webinars",
+  "/trainers",
   "/registrations",
+  "/crm",
   "/analytics",
+  "/academy",
+  "/automation",
   "/settings",
 ];
 

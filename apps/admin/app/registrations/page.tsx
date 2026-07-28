@@ -1,8 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { Sidebar } from "../components/sidebar";
 import { ExportRegistrationsButton } from "./export-button";
+import { WebinarDateFilter } from "./webinar-date-filter";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,10 +9,6 @@ export const revalidate = 0;
 export const metadata = { title: "Registrations | Krave Admin" };
 
 async function getRegistrationsData(search: string, status: string, webinarId: string) {
-  const cookieStore = await cookies();
-  const authCookie = cookieStore.get("sb-access-token") || cookieStore.get("supabase-auth-token") || cookieStore.get("sb-admin-auth");
-  
-  // Note: auth middleware handles main route protection, but we check presence
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -127,26 +122,9 @@ export default async function RegistrationsPage({ searchParams }: Props) {
               />
             </form>
 
-            {/* Filter by Webinar Date Dropdown */}
+            {/* Filter by Webinar Date Dropdown (Client Component) */}
             <div className="md:col-span-4">
-              <form method="GET" className="flex items-center gap-2">
-                {search && <input type="hidden" name="q" value={search} />}
-                {status !== "all" && <input type="hidden" name="status" value={status} />}
-                <select
-                  name="webinar_id"
-                  defaultValue={selectedWebinarId}
-                  onChange={(e) => e.target.form?.submit()}
-                  id="webinar-date-filter"
-                  className="w-full px-3.5 py-2.5 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all shadow-xs"
-                >
-                  <option value="all">🗓️ All Webinar Dates</option>
-                  {webinars.map((w: any) => (
-                    <option key={w.id} value={w.id}>
-                      📅 {formatWebinarDate(w.scheduled_at)} — {w.title}
-                    </option>
-                  ))}
-                </select>
-              </form>
+              <WebinarDateFilter webinars={webinars} selectedWebinarId={selectedWebinarId} />
             </div>
 
             {/* Status Filter Badges */}

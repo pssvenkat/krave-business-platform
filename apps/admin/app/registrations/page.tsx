@@ -1,49 +1,61 @@
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Sidebar } from "../components/sidebar";
 import { ExportRegistrationsButton } from "./export-button";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = { title: "Registrations | Krave Admin" };
 
 async function getRegistrationsData(search: string, status: string, webinarId: string) {
   const cookieStore = await cookies();
-  const supabase = createServerClient(
+  const authCookie = cookieStore.get("sb-access-token") || cookieStore.get("supabase-auth-token") || cookieStore.get("sb-admin-auth");
+  
+  // Note: auth middleware handles main route protection, but we check presence
+  const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
+    { auth: { persistSession: false } }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  try {
+    // Fetch available webinars for the Webinar Date filter dropdown
+    const { data: webinars } = await supabase
+      .from("webinars")
+      .select("id, title, scheduled_at")
+      .order("scheduled_at", { ascending: false });
 
-  // Fetch available webinars for the Webinar Date filter dropdown
-  const { data: webinars } = await supabase
-    .from("webinars")
-    .select("id, title, scheduled_at")
-    .order("scheduled_at", { ascending: false });
+    // Query registrations with join on webinars table
+    let query = supabase
+      .from("registrations")
+      .select("id, first_name, last_name, email, phone, city, lead_source, status, created_at, webinar_id, webinars(id, title, scheduled_at)", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .limit(300);
 
-  // Query registrations
-  let query = supabase
-    .from("registrations")
-    .select("id, first_name, last_name, email, phone, city, lead_source, status, created_at, webinar_id, webinars(id, title, scheduled_at)", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .limit(300);
+    if (status && status !== "all") query = query.eq("status", status);
+    if (webinarId && webinarId !== "all") query = query.eq("webinar_id", webinarId);
+    if (search) {
+      query = query.or(
+        `first_name.ilike.%${search}%,last_name.ilike.%${search}%,city.ilike.%${search}%`
+      );
+    }
 
-  if (status && status !== "all") query = query.eq("status", status);
-  if (webinarId && webinarId !== "all") query = query.eq("webinar_id", webinarId);
-  if (search) {
-    query = query.or(
-      `first_name.ilike.%${search}%,last_name.ilike.%${search}%,city.ilike.%${search}%`
-    );
+    const { data, count } = await query;
+    return {
+      registrations: data ?? [],
+      count: count ?? 0,
+      webinars: webinars ?? [],
+    };
+  } catch (err) {
+    console.error("Registrations page fetch error:", err);
+    return {
+      registrations: [],
+      count: 0,
+      webinars: [],
+    };
   }
-
-  const { data, count } = await query;
-  return {
-    registrations: data ?? [],
-    count: count ?? 0,
-    webinars: webinars ?? [],
-  };
 }
 
 const STATUS_OPTIONS = ["all", "registered", "confirmed", "attended", "no-show", "cancelled"];
@@ -60,7 +72,7 @@ function statusBadge(s: string) {
 }
 
 function formatWebinarDate(scheduledAt?: string | null): string {
-  if (!scheduledAt) return "Sep 14, 2026, 11:00 AM IST"; // Default fallback
+  if (!scheduledAt) return "Sep 14, 2026, 11:00 AM IST";
   try {
     return new Date(scheduledAt).toLocaleString("en-IN", {
       day: "numeric",

@@ -56,10 +56,26 @@ export function EditLeadForm({ id, initialData }: Props) {
       return;
     }
 
-    // Simulate saving lead updates
-    await new Promise((r) => setTimeout(r, 600));
-    router.push(`/crm/${id}`);
-    router.refresh();
+    try {
+      const res = await fetch(`/api/crm/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update lead");
+      }
+
+      router.push(`/crm/${id}`);
+      router.refresh();
+    } catch (err: any) {
+      console.error("Lead update error:", err);
+      setError(err.message || "Failed to save lead updates. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

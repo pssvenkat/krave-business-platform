@@ -57,11 +57,21 @@ async function getData(search: string, stage: string) {
   }
 
   const { data, count } = await q;
-  const leads = (data ?? []).map((r: any, i: number) => ({
-    ...r,
-    stage: stage !== "all" ? stage : (["new","contacted","qualified","converted","new","contacted","qualified"][i % 7]),
-    score: Math.min(98, 60 + ((r.first_name?.charCodeAt(0) ?? 65) % 38)),
-  }));
+  const leads = (data ?? []).map((r: any, i: number) => {
+    let computedStage = "new";
+    if (r.status === "registered") computedStage = "new";
+    else if (r.status === "confirmed") computedStage = "qualified";
+    else if (r.status === "attended") computedStage = "converted";
+    else if (r.status === "cancelled") computedStage = "lost";
+    else if (["new","contacted","qualified","converted","lost"].includes(r.status)) computedStage = r.status;
+    else computedStage = ["new","contacted","qualified","converted","new","contacted","qualified"][i % 7] ?? "new";
+
+    return {
+      ...r,
+      stage: computedStage,
+      score: Math.min(98, 60 + ((r.first_name?.charCodeAt(0) ?? 65) % 38)),
+    };
+  });
 
   const filtered = stage !== "all" ? leads.filter((l: any) => l.stage === stage) : leads;
 

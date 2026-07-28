@@ -54,7 +54,14 @@ export default async function LeadDetailPage({ params }: PageProps) {
 
   if (!lead) notFound();
 
-  const stage = (["new","contacted","qualified","converted","new","contacted"][Math.abs(id.charCodeAt(0) % 6)]) as string;
+  let stage = "new";
+  if (lead.status === "registered") stage = "new";
+  else if (lead.status === "confirmed") stage = "qualified";
+  else if (lead.status === "attended") stage = "converted";
+  else if (lead.status === "cancelled") stage = "lost";
+  else if (["new","contacted","qualified","converted","lost"].includes(lead.status)) stage = lead.status;
+  else stage = (["new","contacted","qualified","converted","new","contacted"][Math.abs(id.charCodeAt(0) % 6)] ?? "new");
+
   const score = Math.min(98, 60 + (id.charCodeAt(0) % 38));
   const stageMeta: StageMeta = STAGE_META[stage] ?? DEFAULT_STAGE_META;
 

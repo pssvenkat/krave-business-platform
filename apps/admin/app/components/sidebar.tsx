@@ -22,15 +22,15 @@ export function Sidebar() {
   return (
     <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-[#e2efe6] flex-shrink-0 shadow-sm">
       {/* Logo Container - White field for logo */}
-      <div className="px-6 py-5 border-b border-[#e2efe6] bg-[#f8faf5]/50">
+      <div className="px-5 py-4 border-b border-[#e2efe6] bg-[#f8faf5]/50">
         <Link href="/dashboard" className="flex items-center">
-          <div className="bg-white rounded-xl px-3.5 py-2 border border-[#e2efe6] shadow-sm flex items-center">
+          <div className="bg-white rounded-2xl px-4 py-2.5 border border-[#e2efe6] shadow-sm flex items-center w-full justify-center">
             <Image
               src="/logo.jpg"
               alt="Krave Microgreens Admin"
-              width={120}
-              height={44}
-              className="h-9 w-auto object-contain"
+              width={180}
+              height={60}
+              className="h-14 w-auto object-contain max-h-14"
               priority
             />
           </div>

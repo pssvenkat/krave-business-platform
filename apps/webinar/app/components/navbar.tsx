@@ -9,16 +9,16 @@ export function Navbar({ webinar }: { webinar?: WebinarData }) {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#e2efe6] bg-white/95 backdrop-blur-md shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
         {/* Logo — white background container as per brand guidelines */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="bg-white border border-[#e2efe6] rounded-xl px-3.5 py-1.5 shadow-sm group-hover:shadow-md transition-shadow duration-200 flex items-center">
+          <div className="bg-white border border-[#e2efe6] rounded-2xl px-4 py-2 shadow-sm group-hover:shadow-md transition-all duration-200 flex items-center">
             <Image
               src="/logo.jpg"
               alt="Krave Microgreens"
-              width={110}
-              height={44}
-              className="h-9 w-auto object-contain"
+              width={160}
+              height={56}
+              className="h-12 w-auto object-contain max-h-12"
               priority
             />
           </div>

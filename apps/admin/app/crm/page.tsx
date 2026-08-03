@@ -46,10 +46,11 @@ async function getData(search: string, stage: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  /* Fetch from registrations table — CRM view over confirmed leads */
+  /* Fetch from registrations table — CRM view over active leads (excludes cancelled registrations) */
   let q = supabase
     .from("registrations")
     .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, lead_status, created_at", { count: "exact" })
+    .neq("status", "cancelled")
     .order("created_at", { ascending: false })
     .limit(200);
 

@@ -79,12 +79,19 @@ async function getData(search: string, stage: string, webinarId: string) {
     else if (r.status === "attended") computedStage = "converted";
     else if (r.status === "cancelled") computedStage = "lost";
     else if (["new","contacted","qualified","converted","lost"].includes(r.status)) computedStage = r.status;
-    else computedStage = "new";
+    // Calculate dynamic AI Intent Score based on lead profile signals
+    let aiScore = 55; // Base score
+    if (r.experience === "yes") aiScore += 20;
+    if (["referral", "webinar", "direct"].includes(r.lead_source)) aiScore += 15;
+    else if (["instagram", "youtube", "whatsapp"].includes(r.lead_source)) aiScore += 10;
+    if (computedStage === "qualified" || computedStage === "converted") aiScore += 15;
+    else if (computedStage === "contacted") aiScore += 10;
+    if (r.first_name && r.email && r.phone && r.city) aiScore += 9;
 
     return {
       ...r,
       stage: computedStage,
-      score: Math.min(98, 60 + ((r.first_name?.charCodeAt(0) ?? 65) % 38)),
+      score: Math.min(98, Math.max(50, aiScore)),
     };
   });
 

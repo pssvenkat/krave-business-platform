@@ -67,7 +67,15 @@ export default async function LeadDetailPage({ params }: PageProps) {
   else stage = "new";
 
   const fullName = `${lead.first_name || ""}${lead.last_name ? ` ${lead.last_name}` : ""}`.trim() || "Lead";
-  const score = Math.min(98, 60 + (id.charCodeAt(0) % 38));
+  
+  let aiScore = 55;
+  if (lead.experience === "yes") aiScore += 20;
+  if (["referral", "webinar", "direct"].includes(lead.lead_source)) aiScore += 15;
+  else if (["instagram", "youtube", "whatsapp"].includes(lead.lead_source)) aiScore += 10;
+  if (stage === "qualified" || stage === "converted") aiScore += 15;
+  else if (stage === "contacted") aiScore += 10;
+  if (lead.first_name && lead.email && lead.phone && lead.city) aiScore += 9;
+  const score = Math.min(98, Math.max(50, aiScore));
   const stageMeta: StageMeta = STAGE_META[stage] ?? DEFAULT_STAGE_META;
   const experienceText = lead.experience === "yes" ? "🌱 Yes (Experienced Grower)" : "❌ No (Beginner)";
 

@@ -78,7 +78,12 @@ export default async function WebinarDetailPage({ params }: Props) {
                 }) + " IST",
               },
               { label: "Registrations", value: `${count} / ${webinar.max_registrations ?? 500}` },
-              { label: "Duration", value: `${webinar.duration_minutes} min` },
+              {
+                label: "Duration",
+                value: webinar.duration_minutes
+                  ? `${webinar.duration_minutes / 60} ${webinar.duration_minutes / 60 === 1 ? "Hour" : "Hours"}`
+                  : "1.5 Hours",
+              },
             ].map((item) => (
               <div key={item.label} className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm">
                 <p className="text-[#4a6b57] text-xs font-bold uppercase tracking-wider mb-1">{item.label}</p>

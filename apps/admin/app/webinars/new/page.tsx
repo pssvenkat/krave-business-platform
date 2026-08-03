@@ -14,7 +14,7 @@ const schema = z.object({
   description: z.string().optional(),
   trainerId: z.string().optional(),
   scheduledAt: z.string().min(1, "Scheduled date/time is required"),
-  durationMinutes: z.coerce.number().min(15).max(480),
+  durationHours: z.string().min(1, "Duration is required"),
   maxSeats: z.coerce.number().min(1).max(100000),
   youtubeVideoId: z.string().optional(),
   registrationDeadline: z.string().optional(),
@@ -43,10 +43,10 @@ export default function NewWebinarPage() {
   const [loading, setLoading] = useState(false);
   const [trainers, setTrainers] = useState<TrainerProfile[]>([]);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      durationMinutes: 90,
+      durationHours: "1.5",
       maxSeats: 500,
       speakerName: "Shanthi Ramakrishnamurthy",
       speakerImageUrl: "/trainer.jpg",
@@ -121,7 +121,7 @@ export default function NewWebinarPage() {
       speaker_bio: data.speakerBio ?? null,
       speaker_image_url: data.speakerImageUrl ?? null,
       scheduled_at: scheduledAtIST,
-      duration_minutes: data.durationMinutes,
+      duration_minutes: Math.round(Number(data.durationHours) * 60),
       max_registrations: data.maxSeats,
       youtube_video_id: data.youtubeVideoId ?? null,
       registration_deadline: deadlineIST,
@@ -277,15 +277,24 @@ export default function NewWebinarPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-[#143623] mb-1.5">
-                    Duration (minutes) <span className="text-red-500">*</span>
+                    Duration (Hours) <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    {...register("durationMinutes")}
-                    type="number"
+                  <select
+                    {...register("durationHours")}
                     id="webinar-duration"
-                    placeholder="90"
                     className={inputClass}
-                  />
+                  >
+                    <option value="0.5">⏱️ 0.5 Hours (30 mins)</option>
+                    <option value="1">⏱️ 1 Hour (60 mins)</option>
+                    <option value="1.5">⏱️ 1.5 Hours (90 mins)</option>
+                    <option value="2">⏱️ 2 Hours (120 mins)</option>
+                    <option value="2.5">⏱️ 2.5 Hours (150 mins)</option>
+                    <option value="3">⏱️ 3 Hours (180 mins)</option>
+                    <option value="3.5">⏱️ 3.5 Hours (210 mins)</option>
+                    <option value="4">⏱️ 4 Hours (240 mins)</option>
+                    <option value="4.5">⏱️ 4.5 Hours (270 mins)</option>
+                    <option value="5">⏱️ 5 Hours (300 mins)</option>
+                  </select>
                 </div>
               </div>
 

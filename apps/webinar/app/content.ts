@@ -10,7 +10,7 @@ export const WEBINAR = {
   subtitle: "Turn 10 sq ft of space into ₹30,000+ monthly income",
   date: "September 14, 2026",
   time: "11:00 AM IST",
-  duration: "90 minutes",
+  duration: "1.5 hours",
   // ISO string for countdown timer
   dateISO: "2026-09-14T05:30:00.000Z", // 11:00 AM IST = 05:30 UTC
   youtubeVideoId: "dQw4w9WgXcQ", // Replace with your YouTube Live ID

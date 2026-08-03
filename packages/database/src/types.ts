@@ -202,7 +202,10 @@ export interface Database {
             | "no_show";
           attended_at: string | null;
           ip_address: string | null;
-          user_agent: string | null;
+          offline_class: string | null;
+          online_class: string | null;
+          franchise: string | null;
+          setup_assistance: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -236,6 +239,10 @@ export interface Database {
           attended_at?: string | null;
           ip_address?: string | null;
           user_agent?: string | null;
+          offline_class?: string | null;
+          online_class?: string | null;
+          franchise?: string | null;
+          setup_assistance?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -268,6 +275,10 @@ export interface Database {
           attended_at?: string | null;
           ip_address?: string | null;
           user_agent?: string | null;
+          offline_class?: string | null;
+          online_class?: string | null;
+          franchise?: string | null;
+          setup_assistance?: string | null;
           updated_at?: string;
         };
         Relationships: [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export interface LessonItem {
   id: string;
@@ -102,6 +102,27 @@ export function AcademyModuleGrid() {
   const [managingLessonsModule, setManagingLessonsModule] = useState<CourseModule | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Load saved modules on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("krave_academy_modules");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setModules(parsed);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
+  // Sync state changes to localStorage
+  const updateModulesState = (newModules: CourseModule[]) => {
+    setModules(newModules);
+    localStorage.setItem("krave_academy_modules", JSON.stringify(newModules));
+  };
+
   // Lesson form state
   const [lessonForm, setLessonForm] = useState({
     title: "",
@@ -120,13 +141,12 @@ export function AcademyModuleGrid() {
   });
 
   const toggleStatus = (id: string) => {
-    setModules((prev) =>
-      prev.map((m) =>
-        m.id === id
-          ? { ...m, status: m.status === "published" ? "draft" : "published" }
-          : m
-      )
+    const updated = modules.map((m) =>
+      m.id === id
+        ? { ...m, status: (m.status === "published" ? "draft" : "published") as "published" | "draft" }
+        : m
     );
+    updateModulesState(updated);
   };
 
   const openEditModal = (mod: CourseModule) => {
@@ -165,20 +185,19 @@ export function AcademyModuleGrid() {
     e.preventDefault();
     if (!editingModule) return;
 
-    setModules((prev) =>
-      prev.map((m) =>
-        m.id === editingModule.id
-          ? {
-              ...m,
-              title: form.title,
-              description: form.description,
-              duration: form.duration,
-              lessons: Number(form.lessons),
-              status: form.status,
-            }
-          : m
-      )
+    const updated = modules.map((m) =>
+      m.id === editingModule.id
+        ? {
+            ...m,
+            title: form.title,
+            description: form.description,
+            duration: form.duration,
+            lessons: Number(form.lessons),
+            status: form.status,
+          }
+        : m
     );
+    updateModulesState(updated);
     setEditingModule(null);
   };
 
@@ -207,7 +226,7 @@ export function AcademyModuleGrid() {
       lessonsList: [],
     };
 
-    setModules((prev) => [...prev, newModule]);
+    updateModulesState([...modules, newModule]);
     setIsCreating(false);
   };
 

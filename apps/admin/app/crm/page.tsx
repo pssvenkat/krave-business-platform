@@ -49,7 +49,7 @@ async function getData(search: string, stage: string) {
   /* Fetch from registrations table — CRM view over confirmed leads */
   let q = supabase
     .from("registrations")
-    .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, instagram_username, created_at", { count: "exact" })
+    .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, lead_status, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -60,8 +60,8 @@ async function getData(search: string, stage: string) {
   const { data, count } = await q;
   const leads = (data ?? []).map((r: any) => {
     let computedStage = "new";
-    if (typeof r.instagram_username === "string" && r.instagram_username.startsWith("stage:")) {
-      computedStage = r.instagram_username.replace("stage:", "");
+    if (typeof r.lead_status === "string" && r.lead_status.trim().length > 0) {
+      computedStage = r.lead_status.replace("stage:", "");
     } else if (r.status === "registered") computedStage = "new";
     else if (r.status === "contacted") computedStage = "contacted";
     else if (r.status === "confirmed") computedStage = "qualified";

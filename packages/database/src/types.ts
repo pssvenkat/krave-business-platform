@@ -181,7 +181,7 @@ export interface Database {
           state: string | null;
           city: string | null;
           occupation: string | null;
-          instagram_username: string | null;
+          lead_status: string | null;
           lead_source:
             | "instagram"
             | "youtube"
@@ -218,7 +218,7 @@ export interface Database {
           state?: string | null;
           city?: string | null;
           occupation?: string | null;
-          instagram_username?: string | null;
+          lead_status?: string | null;
           lead_source:
             | "instagram"
             | "youtube"
@@ -250,7 +250,7 @@ export interface Database {
           state?: string | null;
           city?: string | null;
           occupation?: string | null;
-          instagram_username?: string | null;
+          lead_status?: string | null;
           lead_source?:
             | "instagram"
             | "youtube"

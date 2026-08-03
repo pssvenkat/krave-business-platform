@@ -17,7 +17,6 @@ const schema = z.object({
     .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
   city: z.string().min(2, "City is required"),
   occupation: z.string().min(2, "Occupation is required"),
-  instagram: z.string().optional(),
   leadSource: z.string().min(1, "Please select how you heard about us"),
   agreeToTerms: z.boolean().refine((v) => v, "You must agree to continue"),
 });
@@ -173,21 +172,6 @@ export function RegistrationForm({ webinarId }: { webinarId: string }) {
           className={errors.occupation ? errorInputClass : inputClass}
           id="reg-occupation"
         />
-      </Field>
-
-      {/* Instagram */}
-      <Field label="Instagram Handle (Optional)">
-        <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-            @
-          </span>
-          <input
-            {...register("instagram")}
-            placeholder="yourusername"
-            className={`${inputClass} pl-9`}
-            id="reg-instagram"
-          />
-        </div>
       </Field>
 
       {/* Lead source */}

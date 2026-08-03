@@ -21,14 +21,14 @@ async function getLeadData(id: string) {
   try {
     const { data: reg } = await supabase
       .from("registrations")
-      .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, instagram_username, created_at")
+      .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, lead_status, created_at")
       .eq("id", id)
       .maybeSingle();
 
     if (reg) {
       let stage = "new";
-      if (typeof reg.instagram_username === "string" && reg.instagram_username.startsWith("stage:")) {
-        stage = reg.instagram_username.replace("stage:", "");
+      if (typeof reg.lead_status === "string" && reg.lead_status.trim().length > 0) {
+        stage = reg.lead_status.replace("stage:", "");
       } else if (reg.status === "registered") stage = "new";
       else if (reg.status === "confirmed") stage = "qualified";
       else if (reg.status === "attended") stage = "converted";

@@ -52,11 +52,12 @@ async function getData(search: string, stage: string, webinarId: string) {
     .select("id, title, scheduled_at")
     .order("scheduled_at", { ascending: false });
 
-  /* Fetch from registrations table — CRM view over active leads (excludes cancelled registrations) */
+  /* Fetch from registrations table — CRM view over active leads (excludes cancelled registrations & null lead_status) */
   let q = supabase
     .from("registrations")
     .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, lead_status, webinar_id, created_at", { count: "exact" })
     .neq("status", "cancelled")
+    .not("lead_status", "is", null)
     .order("created_at", { ascending: false })
     .limit(200);
 

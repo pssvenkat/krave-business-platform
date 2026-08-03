@@ -35,7 +35,16 @@ function stageBadge(stage: string) {
   );
 }
 
-async function getData(search: string, stage: string, webinarId: string) {
+async function getData(
+  search: string,
+  stage: string,
+  webinarId: string,
+  interest: string,
+  offlineClass: string,
+  onlineClass: string,
+  franchise: string,
+  setupAssistance: string
+) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,6 +72,31 @@ async function getData(search: string, stage: string, webinarId: string) {
 
   if (webinarId && webinarId !== "all") {
     q = q.eq("webinar_id", webinarId);
+  }
+
+  // Program Interest Column Filters
+  if (interest === "offline_class" || offlineClass === "yes") {
+    q = q.ilike("offline_class", "yes");
+  } else if (offlineClass === "no") {
+    q = q.or("offline_class.is.null,offline_class.ilike.no");
+  }
+
+  if (interest === "online_class" || onlineClass === "yes") {
+    q = q.ilike("online_class", "yes");
+  } else if (onlineClass === "no") {
+    q = q.or("online_class.is.null,online_class.ilike.no");
+  }
+
+  if (interest === "franchise" || franchise === "yes") {
+    q = q.ilike("franchise", "yes");
+  } else if (franchise === "no") {
+    q = q.or("franchise.is.null,franchise.ilike.no");
+  }
+
+  if (interest === "setup_assistance" || setupAssistance === "yes") {
+    q = q.ilike("setup_assistance", "yes");
+  } else if (setupAssistance === "no") {
+    q = q.or("setup_assistance.is.null,setup_assistance.ilike.no");
   }
 
   if (search) {
@@ -111,7 +145,16 @@ async function getData(search: string, stage: string, webinarId: string) {
 }
 
 interface PageProps {
-  searchParams: Promise<{ q?: string; stage?: string; webinarId?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    stage?: string;
+    webinarId?: string;
+    interest?: string;
+    offlineClass?: string;
+    onlineClass?: string;
+    franchise?: string;
+    setupAssistance?: string;
+  }>;
 }
 
 export default async function CrmPage({ searchParams }: PageProps) {
@@ -119,7 +162,22 @@ export default async function CrmPage({ searchParams }: PageProps) {
   const search = sp.q ?? "";
   const activeStage = sp.stage ?? "all";
   const selectedWebinarId = sp.webinarId ?? "all";
-  const { leads, stageCounts, total, webinars } = await getData(search, activeStage, selectedWebinarId);
+  const selectedInterest = sp.interest ?? "all";
+  const selectedOfflineClass = sp.offlineClass ?? "all";
+  const selectedOnlineClass = sp.onlineClass ?? "all";
+  const selectedFranchise = sp.franchise ?? "all";
+  const selectedSetupAssistance = sp.setupAssistance ?? "all";
+
+  const { leads, stageCounts, total, webinars } = await getData(
+    search,
+    activeStage,
+    selectedWebinarId,
+    selectedInterest,
+    selectedOfflineClass,
+    selectedOnlineClass,
+    selectedFranchise,
+    selectedSetupAssistance
+  );
 
   const conversionRate = stageCounts.all > 0
     ? Math.round((stageCounts.converted / stageCounts.all) * 100)
@@ -168,61 +226,135 @@ export default async function CrmPage({ searchParams }: PageProps) {
           </div>
 
           {/* ── Pipeline Stage Tabs & Filters ── */}
-          <div className="flex flex-wrap items-center gap-2">
-            {(["all", "new", "contacted", "qualified", "converted", "lost"] as const).map((s) => {
-              const count = stageCounts[s];
-              const isActive = activeStage === s;
-              const meta = s === "all" ? null : STAGE_META[s];
-              return (
-                <a
-                  key={s}
-                  href={`?stage=${s}${search ? `&q=${search}` : ""}${selectedWebinarId !== "all" ? `&webinarId=${selectedWebinarId}` : ""}`}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                    isActive
-                      ? "bg-[#1e5631] text-white shadow-sm"
-                      : "bg-white border border-[#e2efe6] text-[#4a6b57] hover:bg-[#f0f7f2] hover:text-[#143623]"
-                  }`}
-                >
-                  {meta && <span className={`w-2 h-2 rounded-full ${isActive ? "bg-white/70" : meta.dot}`} />}
-                  <span className="capitalize">{s === "all" ? "All Leads" : meta!.label}</span>
-                  <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
-                    isActive ? "bg-white/20" : "bg-[#edf6f0] text-[#1e5631]"
-                  }`}>
-                    {count}
-                  </span>
-                </a>
-              );
-            })}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {/* Stage Tabs */}
+              <div className="flex flex-wrap items-center gap-2">
+                {(["all", "new", "contacted", "qualified", "converted", "lost"] as const).map((s) => {
+                  const count = stageCounts[s];
+                  const isActive = activeStage === s;
+                  const meta = s === "all" ? null : STAGE_META[s];
+                  const buildUrl = () => {
+                    const params = new URLSearchParams();
+                    params.set("stage", s);
+                    if (search) params.set("q", search);
+                    if (selectedWebinarId !== "all") params.set("webinarId", selectedWebinarId);
+                    if (selectedInterest !== "all") params.set("interest", selectedInterest);
+                    if (selectedOfflineClass !== "all") params.set("offlineClass", selectedOfflineClass);
+                    if (selectedOnlineClass !== "all") params.set("onlineClass", selectedOnlineClass);
+                    if (selectedFranchise !== "all") params.set("franchise", selectedFranchise);
+                    if (selectedSetupAssistance !== "all") params.set("setupAssistance", selectedSetupAssistance);
+                    return `?${params.toString()}`;
+                  };
 
-            {/* Webinar & Text Search Form */}
-            <form className="ml-auto flex items-center gap-2">
+                  return (
+                    <a
+                      key={s}
+                      href={buildUrl()}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                        isActive
+                          ? "bg-[#1e5631] text-white shadow-sm"
+                          : "bg-white border border-[#e2efe6] text-[#4a6b57] hover:bg-[#f0f7f2] hover:text-[#143623]"
+                      }`}
+                    >
+                      {meta && <span className={`w-2 h-2 rounded-full ${isActive ? "bg-white/70" : meta.dot}`} />}
+                      <span className="capitalize">{s === "all" ? "All Leads" : meta!.label}</span>
+                      <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${
+                        isActive ? "bg-white/20" : "bg-[#edf6f0] text-[#1e5631]"
+                      }`}>
+                        {count}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+
+              {/* Reset Filters */}
+              {(selectedInterest !== "all" || selectedOfflineClass !== "all" || selectedOnlineClass !== "all" || selectedFranchise !== "all" || selectedSetupAssistance !== "all" || selectedWebinarId !== "all" || search !== "") && (
+                <Link
+                  href="/crm"
+                  className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1"
+                >
+                  ✕ Reset All Filters
+                </Link>
+              )}
+            </div>
+
+            {/* ── Multi-Filter Form ── */}
+            <form className="bg-white border border-[#e2efe6] rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-3">
               {activeStage !== "all" && <input type="hidden" name="stage" value={activeStage} />}
-              
+
+              {/* Webinar Filter */}
               <select
                 name="webinarId"
                 defaultValue={selectedWebinarId}
-                className="px-3.5 py-2 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all shadow-xs"
+                className="px-3 py-2 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] transition-all shadow-2xs"
               >
                 <option value="all">🎙️ All Webinars</option>
                 {webinars.map((w: any) => (
                   <option key={w.id} value={w.id}>
-                    🎙️ {w.title.length > 30 ? w.title.slice(0, 30) + "…" : w.title}
+                    🎙️ {w.title.length > 25 ? w.title.slice(0, 25) + "…" : w.title}
                   </option>
                 ))}
               </select>
 
+              {/* Offline Class Column Filter */}
+              <select
+                name="offlineClass"
+                defaultValue={selectedOfflineClass}
+                className="px-3 py-2 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] transition-all shadow-2xs"
+              >
+                <option value="all">🏫 Offline Class: All</option>
+                <option value="yes">🏫 Offline Class: Yes</option>
+                <option value="no">🏫 Offline Class: No</option>
+              </select>
+
+              {/* Online Class Column Filter */}
+              <select
+                name="onlineClass"
+                defaultValue={selectedOnlineClass}
+                className="px-3 py-2 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] transition-all shadow-2xs"
+              >
+                <option value="all">💻 Online Class: All</option>
+                <option value="yes">💻 Online Class: Yes</option>
+                <option value="no">💻 Online Class: No</option>
+              </select>
+
+              {/* Franchise Column Filter */}
+              <select
+                name="franchise"
+                defaultValue={selectedFranchise}
+                className="px-3 py-2 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] transition-all shadow-2xs"
+              >
+                <option value="all">🏬 Franchise: All</option>
+                <option value="yes">🏬 Franchise: Yes</option>
+                <option value="no">🏬 Franchise: No</option>
+              </select>
+
+              {/* Setup Assistance Column Filter */}
+              <select
+                name="setupAssistance"
+                defaultValue={selectedSetupAssistance}
+                className="px-3 py-2 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] transition-all shadow-2xs"
+              >
+                <option value="all">🚜 Farm Setup: All</option>
+                <option value="yes">🚜 Farm Setup: Yes</option>
+                <option value="no">🚜 Farm Setup: No</option>
+              </select>
+
+              {/* Search text */}
               <input
                 name="q"
                 defaultValue={search}
-                placeholder="Search leads…"
-                className="px-4 py-2 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all w-48 shadow-xs"
+                placeholder="Search name, email, city…"
+                className="px-4 py-2 bg-[#f8faf5] border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-xs font-bold focus:outline-none focus:border-[#1e5631] transition-all flex-1 min-w-40 shadow-2xs"
               />
 
               <button
                 type="submit"
-                className="px-3 py-2 bg-[#1e5631] hover:bg-[#163f24] text-white font-bold text-xs rounded-xl transition-all"
+                className="px-4 py-2 bg-[#1e5631] hover:bg-[#163f24] text-white font-bold text-xs rounded-xl transition-all shadow-xs flex items-center gap-1"
               >
-                Filter
+                🔍 Apply Filters
               </button>
             </form>
           </div>

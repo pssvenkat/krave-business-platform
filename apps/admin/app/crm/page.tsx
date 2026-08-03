@@ -55,7 +55,7 @@ async function getData(search: string, stage: string, webinarId: string) {
   /* Fetch from registrations table — CRM view over active leads (excludes cancelled registrations & null lead_status) */
   let q = supabase
     .from("registrations")
-    .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, lead_status, webinar_id, created_at", { count: "exact" })
+    .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, lead_status, webinar_id, offline_class, online_class, franchise, setup_assistance, created_at", { count: "exact" })
     .neq("status", "cancelled")
     .not("lead_status", "is", null)
     .order("created_at", { ascending: false })
@@ -269,6 +269,23 @@ export default async function CrmPage({ searchParams }: PageProps) {
                                 {l.first_name}{l.last_name ? ` ${l.last_name}` : ""}
                               </Link>
                               <p className="text-[#6b8e78] text-xs">{l.occupation || "Grower"}</p>
+                              {(() => {
+                                const tags: string[] = [];
+                                if (l.offline_class?.toString().toLowerCase() === "yes") tags.push("🏫 Offline Class");
+                                if (l.online_class?.toString().toLowerCase() === "yes") tags.push("💻 Online Class");
+                                if (l.franchise?.toString().toLowerCase() === "yes") tags.push("🏬 Franchise");
+                                if (l.setup_assistance?.toString().toLowerCase() === "yes") tags.push("🚜 Setup");
+                                if (tags.length === 0) return null;
+                                return (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {tags.map((t) => (
+                                      <span key={t} className="bg-[#edf6f0] border border-[#d0e6d6] text-[#1e5631] px-1.5 py-0.5 rounded text-[10px] font-extrabold shadow-2xs">
+                                        {t}
+                                      </span>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           </div>
                         </td>

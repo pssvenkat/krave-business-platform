@@ -187,14 +187,38 @@ export default async function LeadDetailPage({ params }: PageProps) {
               </div>
 
               {/* Notes */}
-              <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-                <h3 className="text-[#143623] font-bold text-base mb-3 flex items-center gap-2">
-                  📝 Lead Notes
-                </h3>
-                <div className="bg-[#f8faf5] border border-[#e2efe6] rounded-xl p-4 text-sm text-[#4a6b57] font-medium min-h-24 leading-relaxed">
-                  {`${fullName} registered for the Krave Microgreens Live Webinar. Source: ${lead.lead_source}. Location: ${lead.city}. Occupation: ${lead.occupation || "N/A"}. Microgreens Experience: ${experienceText}.`}
-                </div>
-              </div>
+              {(() => {
+                const interests: string[] = [];
+                if (lead.offline_class?.toString().toLowerCase() === "yes") interests.push("🏫 Offline Masterclass");
+                if (lead.online_class?.toString().toLowerCase() === "yes") interests.push("💻 Online Masterclass");
+                if (lead.franchise?.toString().toLowerCase() === "yes") interests.push("🏬 Franchise Opportunity");
+                if (lead.setup_assistance?.toString().toLowerCase() === "yes") interests.push("🚜 Commercial Farm Setup Assistance");
+
+                return (
+                  <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
+                    <h3 className="text-[#143623] font-bold text-base mb-3 flex items-center gap-2">
+                      📝 Lead Notes
+                    </h3>
+                    <div className="bg-[#f8faf5] border border-[#e2efe6] rounded-xl p-4 text-sm text-[#4a6b57] font-medium min-h-24 leading-relaxed space-y-3">
+                      <p>
+                        {`${fullName} registered for the Krave Microgreens Live Webinar. Source: ${lead.lead_source}. Location: ${lead.city}. Occupation: ${lead.occupation || "N/A"}. Microgreens Experience: ${experienceText}.`}
+                      </p>
+                      {interests.length > 0 && (
+                        <div className="pt-3 border-t border-[#e2efe6] space-y-2">
+                          <p className="text-xs font-bold text-[#143623]">Registered Program Interests (Yes):</p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {interests.map((item) => (
+                              <span key={item} className="bg-[#edf6f0] border border-[#d0e6d6] text-[#1e5631] px-3 py-1 rounded-lg text-xs font-bold shadow-2xs">
+                                {item}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Automated Activity Timeline */}
               <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">

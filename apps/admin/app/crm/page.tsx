@@ -35,7 +35,7 @@ function stageBadge(stage: string) {
   );
 }
 
-async function getData(search: string, stage: string) {
+async function getData(search: string, stage: string, webinarId: string) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -46,13 +46,23 @@ async function getData(search: string, stage: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Fetch list of webinars for filter dropdown
+  const { data: webinarsData } = await supabase
+    .from("webinars")
+    .select("id, title, scheduled_at")
+    .order("scheduled_at", { ascending: false });
+
   /* Fetch from registrations table — CRM view over active leads (excludes cancelled registrations) */
   let q = supabase
     .from("registrations")
-    .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, lead_status, created_at", { count: "exact" })
+    .select("id, first_name, last_name, email, phone, city, occupation, lead_source, status, lead_status, webinar_id, created_at", { count: "exact" })
     .neq("status", "cancelled")
     .order("created_at", { ascending: false })
     .limit(200);
+
+  if (webinarId && webinarId !== "all") {
+    q = q.eq("webinar_id", webinarId);
+  }
 
   if (search) {
     q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,city.ilike.%${search}%`);
@@ -89,18 +99,19 @@ async function getData(search: string, stage: string) {
     lost: leads.filter((l: any) => l.stage === "lost").length,
   };
 
-  return { leads: filtered, stageCounts, total: count ?? 0 };
+  return { leads: filtered, stageCounts, total: count ?? 0, webinars: webinarsData ?? [] };
 }
 
 interface PageProps {
-  searchParams: Promise<{ q?: string; stage?: string }>;
+  searchParams: Promise<{ q?: string; stage?: string; webinarId?: string }>;
 }
 
 export default async function CrmPage({ searchParams }: PageProps) {
   const sp = await searchParams;
   const search = sp.q ?? "";
   const activeStage = sp.stage ?? "all";
-  const { leads, stageCounts, total } = await getData(search, activeStage);
+  const selectedWebinarId = sp.webinarId ?? "all";
+  const { leads, stageCounts, total, webinars } = await getData(search, activeStage, selectedWebinarId);
 
   const conversionRate = stageCounts.all > 0
     ? Math.round((stageCounts.converted / stageCounts.all) * 100)
@@ -148,8 +159,8 @@ export default async function CrmPage({ searchParams }: PageProps) {
             ))}
           </div>
 
-          {/* ── Pipeline Stage Tabs ── */}
-          <div className="flex flex-wrap gap-2">
+          {/* ── Pipeline Stage Tabs & Filters ── */}
+          <div className="flex flex-wrap items-center gap-2">
             {(["all", "new", "contacted", "qualified", "converted", "lost"] as const).map((s) => {
               const count = stageCounts[s];
               const isActive = activeStage === s;
@@ -157,7 +168,7 @@ export default async function CrmPage({ searchParams }: PageProps) {
               return (
                 <a
                   key={s}
-                  href={`?stage=${s}${search ? `&q=${search}` : ""}`}
+                  href={`?stage=${s}${search ? `&q=${search}` : ""}${selectedWebinarId !== "all" ? `&webinarId=${selectedWebinarId}` : ""}`}
                   className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                     isActive
                       ? "bg-[#1e5631] text-white shadow-sm"
@@ -175,14 +186,36 @@ export default async function CrmPage({ searchParams }: PageProps) {
               );
             })}
 
-            {/* Search */}
-            <form className="ml-auto">
+            {/* Webinar & Text Search Form */}
+            <form className="ml-auto flex items-center gap-2">
+              {activeStage !== "all" && <input type="hidden" name="stage" value={activeStage} />}
+              
+              <select
+                name="webinarId"
+                defaultValue={selectedWebinarId}
+                className="px-3.5 py-2 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] text-xs font-bold focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all shadow-xs"
+              >
+                <option value="all">🎙️ All Webinars</option>
+                {webinars.map((w: any) => (
+                  <option key={w.id} value={w.id}>
+                    🎙️ {w.title.length > 30 ? w.title.slice(0, 30) + "…" : w.title}
+                  </option>
+                ))}
+              </select>
+
               <input
                 name="q"
                 defaultValue={search}
                 placeholder="Search leads…"
-                className="px-4 py-2 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all w-52 shadow-xs"
+                className="px-4 py-2 bg-white border border-[#d0e6d6] rounded-xl text-[#143623] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#1e5631] focus:ring-2 focus:ring-[#1e5631]/20 transition-all w-48 shadow-xs"
               />
+
+              <button
+                type="submit"
+                className="px-3 py-2 bg-[#1e5631] hover:bg-[#163f24] text-white font-bold text-xs rounded-xl transition-all"
+              >
+                Filter
+              </button>
             </form>
           </div>
 

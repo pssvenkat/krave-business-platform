@@ -18,6 +18,7 @@ interface LeadFormInitial {
   occupation: string;
   leadSource: string;
   stage: string;
+  microgreensExperience?: string;
   notes: string;
 }
 
@@ -33,13 +34,14 @@ export function EditLeadForm({ id, initialData }: Props) {
 
   const [form, setForm] = useState({
     firstName: initialData.firstName,
-    lastName: initialData.lastName,
+    lastName: initialData.lastName || "",
     email: initialData.email,
     phone: initialData.phone,
     city: initialData.city,
     occupation: initialData.occupation,
     leadSource: initialData.leadSource,
     stage: initialData.stage,
+    microgreensExperience: initialData.microgreensExperience || "no",
     notes: initialData.notes,
   });
 
@@ -50,7 +52,7 @@ export function EditLeadForm({ id, initialData }: Props) {
     setLoading(true);
     setError(null);
 
-    if (!form.firstName || !form.lastName || !form.email || !form.phone || !form.city) {
+    if (!form.firstName || !form.email || !form.phone || !form.city) {
       setError("Please fill in all required fields.");
       setLoading(false);
       return;
@@ -111,7 +113,7 @@ export function EditLeadForm({ id, initialData }: Props) {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">
-                    Last Name <span className="text-red-500">*</span>
+                    Last Name <span className="text-gray-400 font-normal">(Optional)</span>
                   </label>
                   <input
                     id="lead-last-name"
@@ -178,18 +180,18 @@ export function EditLeadForm({ id, initialData }: Props) {
                 </div>
               </div>
 
-              {/* Lead Source & Stage */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Lead Source, Stage & Microgreens Experience */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div>
                   <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">Lead Source</label>
                   <select id="lead-source" value={form.leadSource} onChange={(e) => set("leadSource", e.target.value)} className={inputClass}>
                     <option value="instagram">📸 Instagram</option>
                     <option value="youtube">▶️ YouTube</option>
                     <option value="referral">🤝 Referral</option>
-                    <option value="webinar">🎙️ Webinar Registration</option>
+                    <option value="webinar">🎙️ Webinar</option>
                     <option value="whatsapp">💬 WhatsApp</option>
                     <option value="direct">🔗 Direct Outbound</option>
-                    <option value="organic">🌱 Organic Search</option>
+                    <option value="organic">🌱 Organic</option>
                   </select>
                 </div>
                 <div>
@@ -200,6 +202,13 @@ export function EditLeadForm({ id, initialData }: Props) {
                     <option value="qualified">⭐ Qualified</option>
                     <option value="converted">🎉 Converted</option>
                     <option value="lost">❌ Lost</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">Microgreens Experience</label>
+                  <select id="lead-experience" value={form.microgreensExperience} onChange={(e) => set("microgreensExperience", e.target.value)} className={inputClass}>
+                    <option value="no">❌ No (Beginner)</option>
+                    <option value="yes">🌱 Yes (Experienced)</option>
                   </select>
                 </div>
               </div>

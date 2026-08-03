@@ -15,7 +15,8 @@ export default function NewLeadPage() {
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "",
-    city: "", occupation: "", leadSource: "instagram", stage: "new", notes: "",
+    city: "", occupation: "", leadSource: "instagram", stage: "new",
+    microgreensExperience: "no", notes: "",
   });
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -25,13 +26,13 @@ export default function NewLeadPage() {
     setLoading(true);
     setError(null);
 
-    if (!form.firstName || !form.lastName || !form.email || !form.phone || !form.city) {
+    if (!form.firstName || !form.email || !form.phone || !form.city) {
       setError("Please fill in all required fields.");
       setLoading(false);
       return;
     }
 
-    /* When crm_leads table exists, insert here. For now, just navigate back. */
+    /* When crm_leads table exists, insert here. For now, navigate back to CRM */
     await new Promise((r) => setTimeout(r, 600));
     router.push("/crm");
     router.refresh();
@@ -59,7 +60,7 @@ export default function NewLeadPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">
-                    Last Name <span className="text-red-500">*</span>
+                    Last Name <span className="text-gray-400 font-normal">(Optional)</span>
                   </label>
                   <input id="lead-last-name" value={form.lastName} onChange={(e) => set("lastName", e.target.value)}
                     placeholder="Sharma" className={inputClass} />
@@ -98,17 +99,17 @@ export default function NewLeadPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <div>
                   <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">Lead Source</label>
                   <select id="lead-source" value={form.leadSource} onChange={(e) => set("leadSource", e.target.value)} className={inputClass}>
                     <option value="instagram">📸 Instagram</option>
                     <option value="youtube">▶️ YouTube</option>
                     <option value="referral">🤝 Referral</option>
-                    <option value="webinar">🎙️ Webinar Registration</option>
+                    <option value="webinar">🎙️ Webinar</option>
                     <option value="whatsapp">💬 WhatsApp</option>
                     <option value="direct">🔗 Direct Outbound</option>
-                    <option value="organic">🌱 Organic Search</option>
+                    <option value="organic">🌱 Organic</option>
                   </select>
                 </div>
                 <div>
@@ -119,6 +120,13 @@ export default function NewLeadPage() {
                     <option value="qualified">⭐ Qualified</option>
                     <option value="converted">🎉 Converted</option>
                     <option value="lost">❌ Lost</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-2">Microgreens Experience</label>
+                  <select id="lead-experience" value={form.microgreensExperience} onChange={(e) => set("microgreensExperience", e.target.value)} className={inputClass}>
+                    <option value="no">❌ No (Beginner)</option>
+                    <option value="yes">🌱 Yes (Experienced)</option>
                   </select>
                 </div>
               </div>

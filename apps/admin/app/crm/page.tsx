@@ -191,7 +191,7 @@ export default async function CrmPage({ searchParams }: PageProps) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#e2efe6] bg-[#f8faf5]">
-                    {["Lead", "Contact", "Location", "Source", "AI Score", "Stage", "Actions"].map((h) => (
+                    {["Lead", "Contact", "Location", "Source", "Experience", "AI Score", "Stage", "Actions"].map((h) => (
                       <th key={h} className="text-left px-5 py-3.5 text-[#6b8e78] font-bold text-[11px] uppercase tracking-widest">
                         {h}
                       </th>
@@ -201,7 +201,7 @@ export default async function CrmPage({ searchParams }: PageProps) {
                 <tbody className="divide-y divide-[#f0f7f2]">
                   {leads.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="text-center py-16 text-[#6b8e78]">
+                      <td colSpan={8} className="text-center py-16 text-[#6b8e78]">
                         <div className="space-y-2">
                           <p className="text-3xl">🔍</p>
                           <p className="font-bold">No leads match your filters.</p>
@@ -216,7 +216,7 @@ export default async function CrmPage({ searchParams }: PageProps) {
                       <tr key={l.id} className="hover:bg-[#f8faf5] transition-colors group">
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1e5631] to-[#2d7d46] flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1e5631] to-[#4a9b5e] text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
                               {(l.first_name?.[0] ?? "?").toUpperCase()}
                             </div>
                             <div>
@@ -224,9 +224,9 @@ export default async function CrmPage({ searchParams }: PageProps) {
                                 href={`/crm/${l.id}`}
                                 className="text-[#143623] font-bold hover:text-[#1e5631] transition-colors"
                               >
-                                {l.first_name} {l.last_name}
+                                {l.first_name}{l.last_name ? ` ${l.last_name}` : ""}
                               </Link>
-                              <p className="text-[#6b8e78] text-xs">{l.occupation}</p>
+                              <p className="text-[#6b8e78] text-xs">{l.occupation || "Grower"}</p>
                             </div>
                           </div>
                         </td>
@@ -239,6 +239,15 @@ export default async function CrmPage({ searchParams }: PageProps) {
                           <span className="inline-flex items-center gap-1.5 text-[#4a6b57] text-xs font-medium capitalize">
                             <span>{SOURCE_EMOJI[l.lead_source] ?? "🔗"}</span>
                             {l.lead_source}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                            l.experience === "yes"
+                              ? "bg-green-50 text-green-700 border-green-200"
+                              : "bg-gray-50 text-gray-600 border-gray-200"
+                          }`}>
+                            {l.experience === "yes" ? "🌱 Yes" : "❌ No"}
                           </span>
                         </td>
                         <td className="px-5 py-4">

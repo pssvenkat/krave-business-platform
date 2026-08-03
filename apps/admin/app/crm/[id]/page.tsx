@@ -66,8 +66,10 @@ export default async function LeadDetailPage({ params }: PageProps) {
   else if (["new","contacted","qualified","converted","lost"].includes(lead.status)) stage = lead.status;
   else stage = "new";
 
+  const fullName = `${lead.first_name || ""}${lead.last_name ? ` ${lead.last_name}` : ""}`.trim() || "Lead";
   const score = Math.min(98, 60 + (id.charCodeAt(0) % 38));
   const stageMeta: StageMeta = STAGE_META[stage] ?? DEFAULT_STAGE_META;
+  const experienceText = lead.experience === "yes" ? "🌱 Yes (Experienced Grower)" : "❌ No (Beginner)";
 
   return (
     <div className="flex min-h-screen bg-[#f8faf5]">
@@ -82,7 +84,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
             </Link>
             <span className="text-[#d0e6d6]">/</span>
             <span className="text-[#143623] font-semibold text-sm">
-              {lead.first_name} {lead.last_name}
+              {fullName}
             </span>
           </div>
           <div className="flex items-center justify-between">
@@ -98,120 +100,118 @@ export default async function LeadDetailPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="p-8 max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="p-8 max-w-6xl">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* ── Left: Profile Card ── */}
-          <div className="space-y-5">
-            {/* Avatar + Identity */}
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm text-center space-y-4">
-              <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#1e5631] to-[#4a9b5e] flex items-center justify-center text-white font-black text-2xl shadow-lg">
-                {lead.first_name?.[0]?.toUpperCase() ?? "?"}
-              </div>
-              <div>
-                <h2 className="text-[#143623] font-black text-xl">{lead.first_name} {lead.last_name}</h2>
-                <p className="text-[#4a6b57] text-sm font-medium">{lead.occupation}</p>
-                <p className="text-[#6b8e78] text-xs font-medium">{lead.city}</p>
+            {/* ── Left: Profile Card + Stage Tracker ── */}
+            <div className="space-y-5">
+              {/* Profile Card */}
+              <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm text-center space-y-4">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#1e5631] to-[#2d7d46] text-white font-black text-2xl flex items-center justify-center mx-auto shadow-md">
+                  {lead.first_name?.[0]?.toUpperCase() ?? "L"}
+                  {lead.last_name?.[0]?.toUpperCase() ?? ""}
+                </div>
+                <div>
+                  <h2 className="text-[#143623] font-black text-xl">{fullName}</h2>
+                  <p className="text-[#6b8e78] text-xs font-semibold mt-0.5">{lead.occupation || "Grower"} · {lead.city}</p>
+                </div>
+                <div className="flex justify-center gap-2">
+                  <span className={`px-3 py-1 rounded-full text-xs font-black border ${stageMeta.color}`}>
+                    <span className={`inline-block w-1.5 h-1.5 rounded-full ${stageMeta.dot} mr-1.5`} />
+                    {stageMeta.label}
+                  </span>
+                </div>
+
+                <div className="pt-3 border-t border-[#f0f7f2] flex items-center justify-around text-center">
+                  <div>
+                    <span className="text-[#6b8e78] text-[10px] font-bold uppercase tracking-wider block">Lead Score</span>
+                    <span className="text-[#1e5631] font-black text-lg">{score}/100</span>
+                  </div>
+                  <div className="border-l border-[#f0f7f2] pl-4">
+                    <span className="text-[#6b8e78] text-[10px] font-bold uppercase tracking-wider block">Channel</span>
+                    <span className="text-[#143623] font-bold text-xs capitalize">{lead.lead_source || "webinar"}</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Stage badge */}
-              <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold border ${stageMeta.color}`}>
-                <span className={`w-2 h-2 rounded-full ${stageMeta.dot}`} />
-                {stageMeta.label}
-              </span>
-            </div>
-
-            {/* AI Score Card */}
-            <div className="bg-gradient-to-br from-[#1e5631] to-[#143623] rounded-2xl p-5 text-white shadow-lg">
-              <p className="text-green-200 text-xs font-bold uppercase tracking-widest mb-2">AI Lead Score</p>
-              <div className="flex items-end gap-3">
-                <span className="text-4xl font-black">{score}</span>
-                <span className="text-green-200 text-sm font-semibold mb-1">/100</span>
-              </div>
-              <div className="w-full bg-white/20 h-2 rounded-full mt-3">
-                <div
-                  className="h-full bg-[#6cc24a] rounded-full transition-all"
-                  style={{ width: `${score}%` }}
+              {/* Interactive Stage Tracker */}
+              <div className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm">
+                <InteractiveStageTracker
+                  leadId={id}
+                  currentStage={stage}
+                  leadData={{
+                    firstName: lead.first_name || "",
+                    lastName: lead.last_name || "",
+                    email: lead.email || "",
+                    phone: lead.phone || "",
+                    city: lead.city || "",
+                    occupation: lead.occupation || "",
+                    leadSource: lead.lead_source || "webinar",
+                  }}
                 />
               </div>
-              <p className="text-green-200 text-xs font-medium mt-2">
-                {score >= 90 ? "🔥 Very High Buying Intent" : score >= 75 ? "⭐ High Potential Lead" : "📊 Moderate Intent"}
-              </p>
             </div>
 
-            {/* Interactive Stage Tracker */}
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm">
-              <InteractiveStageTracker
-                leadId={id}
-                currentStage={stage}
-                leadData={{
-                  firstName: lead.first_name || "",
-                  lastName: lead.last_name || "",
-                  email: lead.email || "",
-                  phone: lead.phone || "",
-                  city: lead.city || "",
-                  occupation: lead.occupation || "",
-                  leadSource: lead.lead_source || "webinar",
-                }}
-              />
-            </div>
-          </div>
-
-          {/* ── Right: Details + Timeline ── */}
-          <div className="lg:col-span-2 space-y-5">
-            {/* Contact Info */}
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-              <h3 className="text-[#143623] font-bold text-base mb-4 flex items-center gap-2">
-                📇 Contact Information
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { label: "Email Address", value: lead.email },
-                  { label: "WhatsApp / Phone", value: `+91 ${lead.phone}` },
-                  { label: "City / Location", value: lead.city },
-                  { label: "Occupation", value: lead.occupation },
-                  { label: "Lead Source", value: lead.lead_source, className: "capitalize" },
-                  { label: "Registered Date", value: new Date(lead.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) },
-                ].map((f) => (
-                  <div key={f.label} className="bg-[#f8faf5] border border-[#e2efe6] rounded-xl p-3.5">
-                    <span className="text-[#6b8e78] text-[11px] font-bold uppercase tracking-wider block">{f.label}</span>
-                    <span className={`text-[#143623] font-bold text-sm mt-0.5 block ${f.className ?? ""}`}>{f.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-              <h3 className="text-[#143623] font-bold text-base mb-3 flex items-center gap-2">
-                📝 Lead Notes
-              </h3>
-              <div className="bg-[#f8faf5] border border-[#e2efe6] rounded-xl p-4 text-sm text-[#4a6b57] font-medium min-h-24 leading-relaxed">
-                {`${lead.first_name} registered for the Krave Microgreens Live Webinar. Source: ${lead.lead_source}. Located in ${lead.city}. Occupation: ${lead.occupation}. High interest in home microgreens farming.`}
-              </div>
-            </div>
-
-            {/* Automated Activity Timeline */}
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
-              <h3 className="text-[#143623] font-bold text-base mb-4 flex items-center gap-2">
-                ⚡ Automated Activity Timeline
-              </h3>
-              <div className="relative space-y-0">
-                {TIMELINE_EVENTS.map((ev, i) => (
-                  <div key={i} className="flex gap-4 pb-5 relative">
-                    {i < TIMELINE_EVENTS.length - 1 && (
-                      <div className="absolute left-[15px] top-8 bottom-0 w-px bg-[#e2efe6]" />
-                    )}
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${ev.color} border border-current/10 z-10`}>
-                      {ev.icon}
-                    </span>
-                    <div className="pt-1">
-                      <p className="text-[#143623] font-bold text-sm">{ev.label}</p>
-                      <p className="text-[#6b8e78] text-xs font-medium">{ev.time}</p>
+            {/* ── Right: Contact Info + Notes + Timeline ── */}
+            <div className="lg:col-span-2 space-y-5">
+              {/* Contact Info */}
+              <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
+                <h3 className="text-[#143623] font-bold text-base mb-4 flex items-center gap-2">
+                  📇 Contact Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { label: "Full Name", value: fullName },
+                    { label: "Email Address", value: lead.email },
+                    { label: "WhatsApp / Phone", value: `+91 ${lead.phone}` },
+                    { label: "City / Location", value: lead.city },
+                    { label: "Occupation", value: lead.occupation || "N/A" },
+                    { label: "Microgreens Experience", value: experienceText },
+                    { label: "Lead Source", value: lead.lead_source, className: "capitalize" },
+                    { label: "Registered Date", value: new Date(lead.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) },
+                  ].map((f) => (
+                    <div key={f.label} className="bg-[#f8faf5] border border-[#e2efe6] rounded-xl p-3.5">
+                      <span className="text-[#6b8e78] text-[11px] font-bold uppercase tracking-wider block">{f.label}</span>
+                      <span className={`text-[#143623] font-bold text-sm mt-0.5 block ${f.className ?? ""}`}>{f.value}</span>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
+                <h3 className="text-[#143623] font-bold text-base mb-3 flex items-center gap-2">
+                  📝 Lead Notes
+                </h3>
+                <div className="bg-[#f8faf5] border border-[#e2efe6] rounded-xl p-4 text-sm text-[#4a6b57] font-medium min-h-24 leading-relaxed">
+                  {`${fullName} registered for the Krave Microgreens Live Webinar. Source: ${lead.lead_source}. Location: ${lead.city}. Occupation: ${lead.occupation || "N/A"}. Microgreens Experience: ${experienceText}.`}
+                </div>
+              </div>
+
+              {/* Automated Activity Timeline */}
+              <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
+                <h3 className="text-[#143623] font-bold text-base mb-4 flex items-center gap-2">
+                  ⚡ Automated Activity Timeline
+                </h3>
+                <div className="relative space-y-0">
+                  {TIMELINE_EVENTS.map((ev, i) => (
+                    <div key={i} className="flex gap-4 pb-5 relative">
+                      {i < TIMELINE_EVENTS.length - 1 && (
+                        <div className="absolute left-[15px] top-8 bottom-0 w-px bg-[#e2efe6]" />
+                      )}
+                      <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${ev.color} border border-current/10 z-10`}>
+                        {ev.icon}
+                      </span>
+                      <div className="pt-1">
+                        <p className="text-[#143623] font-bold text-sm">{ev.label}</p>
+                        <p className="text-[#6b8e78] text-xs font-medium">{ev.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>

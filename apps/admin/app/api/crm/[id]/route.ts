@@ -18,6 +18,7 @@ export async function PUT(
       occupation,
       leadSource,
       stage,
+      microgreensExperience,
       notes,
     } = body;
 
@@ -38,20 +39,26 @@ export async function PUT(
 
     const enumStatus = statusMap[stage] || "registered";
 
+    const updatePayload: Record<string, any> = {
+      first_name: firstName,
+      last_name: lastName || "",
+      email: email,
+      phone: phone,
+      city: city,
+      occupation: occupation,
+      lead_source: leadSource,
+      instagram_username: `stage:${stage}`,
+      status: enumStatus,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (microgreensExperience) {
+      updatePayload.experience = microgreensExperience;
+    }
+
     const { data, error } = await supabase
       .from("registrations")
-      .update({
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-        phone: phone,
-        city: city,
-        occupation: occupation,
-        lead_source: leadSource,
-        instagram_username: `stage:${stage}`,
-        status: enumStatus,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("id", id)
       .select();
 

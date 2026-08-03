@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 
+export interface RegistrationRecord {
+  id: string;
+  lead_source: string | null;
+  city: string | null;
+  status: string | null;
+  created_at: string;
+}
+
 export interface AnalyticsProps {
-  total: number;
-  sources: [string, number][];
-  cities: [string, number][];
-  statuses: Record<string, number>;
+  registrations: RegistrationRecord[];
 }
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -18,57 +23,77 @@ const SOURCE_COLORS: Record<string, string> = {
   direct:    "from-slate-400 to-slate-500",
   facebook:  "from-blue-500 to-blue-600",
   webinar:   "from-amber-500 to-orange-600",
+  email:     "from-cyan-500 to-blue-500",
+  other:     "from-gray-400 to-gray-500",
 };
 
 const SOURCE_EMOJI: Record<string, string> = {
   instagram: "📸", youtube: "▶️", referral: "🤝", whatsapp: "💬",
   organic: "🌱", direct: "🔗", facebook: "📘", webinar: "🎙️",
+  email: "📧", other: "🌐",
 };
 
-export function AnalyticsDashboard({ total, sources, cities, statuses }: AnalyticsProps) {
+export function AnalyticsDashboard({ registrations }: AnalyticsProps) {
   const [dateRange, setDateRange] = useState<"all" | "30d" | "7d">("all");
 
-  // Date range multiplier for demo live filtering
-  const multiplier = dateRange === "7d" ? 0.35 : dateRange === "30d" ? 0.75 : 1;
-  const filteredTotal = Math.max(1, Math.round(total * multiplier));
+  // 1. Filter registrations by actual created_at date range
+  const now = new Date().getTime();
+  const filterMs = dateRange === "7d" ? 7 * 24 * 60 * 60 * 1000 : dateRange === "30d" ? 30 * 24 * 60 * 60 * 1000 : 0;
 
-  const filteredSources = sources.map(([src, cnt]) => [
-    src,
-    Math.max(1, Math.round(cnt * multiplier)),
-  ] as [string, number]);
+  const filteredRegs = registrations.filter((r) => {
+    if (dateRange === "all") return true;
+    if (!r.created_at) return true;
+    const createdMs = new Date(r.created_at).getTime();
+    return now - createdMs <= filterMs;
+  });
 
-  const filteredCities = cities.map(([city, cnt]) => [
-    city,
-    Math.max(1, Math.round(cnt * multiplier)),
-  ] as [string, number]);
+  const total = filteredRegs.length;
 
-  const attendedCount = statuses.attended ? Math.round(statuses.attended * multiplier) : Math.round(filteredTotal * 0.68);
-  const attendanceRate = filteredTotal > 0 ? Math.min(100, Math.round((attendedCount / filteredTotal) * 100)) : 68;
+  // 2. Aggregate Lead Channels (Sources)
+  const sourceCounts: Record<string, number> = {};
+  const cityCounts: Record<string, number> = {};
+  let attendedCount = 0;
+  let confirmedCount = 0;
+
+  filteredRegs.forEach((r) => {
+    const src = (r.lead_source || "other").toLowerCase();
+    sourceCounts[src] = (sourceCounts[src] || 0) + 1;
+
+    const city = (r.city || "Unknown").trim();
+    cityCounts[city] = (cityCounts[city] || 0) + 1;
+
+    if (r.status === "attended") attendedCount++;
+    if (r.status === "confirmed" || r.status === "attended") confirmedCount++;
+  });
+
+  const sources = Object.entries(sourceCounts).sort((a, b) => b[1] - a[1]);
+  const cities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]).slice(0, 7);
+
+  const topSource = sources[0];
+  const topCity = cities[0];
+
+  const attendanceRate = total > 0 ? Math.round((attendedCount / total) * 100) : 0;
 
   const funnel = [
-    { step: "Landing Page Sessions",   n: Math.round(filteredTotal * 3.8), icon: "🌐" },
-    { step: "Registration Form Opens", n: Math.round(filteredTotal * 1.8), icon: "📋" },
-    { step: "Confirmed Registrations", n: filteredTotal,                  icon: "✅" },
-    { step: "Live Webinar Attendees",  n: attendedCount,                  icon: "🎙️" },
-    { step: "Post-Webinar Purchases",  n: Math.round(filteredTotal * 0.18),icon: "🛒" },
+    { step: "Confirmed Registrations", n: total, icon: "📋" },
+    { step: "Qualified / Confirmed", n: confirmedCount, icon: "⭐" },
+    { step: "Live Webinar Attendees", n: attendedCount, icon: "🎙️" },
   ];
-
-  const topSource = filteredSources[0];
-  const topCity = filteredCities[0];
 
   const exportReportCsv = () => {
     const rows = [
       ["Metric", "Value"],
-      ["Total Registrations", filteredTotal],
+      ["Total Registrations", total],
+      ["Attended Count", attendedCount],
       ["Attendance Rate", `${attendanceRate}%`],
       ["Top Channel", topSource ? `${topSource[0]} (${topSource[1]})` : "N/A"],
       ["Top City", topCity ? `${topCity[0]} (${topCity[1]})` : "N/A"],
       [""],
       ["Lead Source", "Count", "Percentage"],
-      ...filteredSources.map(([src, cnt]) => [src, cnt, `${Math.round((cnt / filteredTotal) * 100)}%`]),
+      ...sources.map(([src, cnt]) => [src, cnt, total > 0 ? `${Math.round((cnt / total) * 100)}%` : "0%"]),
       [""],
       ["City", "Count", "Percentage"],
-      ...filteredCities.map(([c, cnt]) => [c, cnt, `${Math.round((cnt / filteredTotal) * 100)}%`]),
+      ...cities.map(([c, cnt]) => [c, cnt, total > 0 ? `${Math.round((cnt / total) * 100)}%` : "0%"]),
     ];
 
     const csvContent = "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
@@ -89,7 +114,7 @@ export function AnalyticsDashboard({ total, sources, cities, statuses }: Analyti
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
           <span className="text-[#143623] font-bold text-sm">Live Database Analytics</span>
-          <span className="text-[#6b8e78] text-xs font-medium">({filteredTotal} total entries)</span>
+          <span className="text-[#6b8e78] text-xs font-medium">({total} total live entries)</span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -123,10 +148,10 @@ export function AnalyticsDashboard({ total, sources, cities, statuses }: Analyti
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Registrations", value: filteredTotal,           icon: "📋", sub: "Live DB records",        delta: "+14%", up: true },
-          { label: "Attendance Rate",      value: `${attendanceRate}%`,    icon: "🎙️", sub: "Live attendees ratio",  delta: "+6%",  up: true },
-          { label: "Top Channel",          value: topSource ? topSource[0] : "—", icon: "📸", sub: topSource ? `${topSource[1]} leads` : "", delta: "", up: true },
-          { label: "Top City",             value: topCity ? topCity[0] : "—",     icon: "📍", sub: topCity ? `${topCity[1]} leads` : "",          delta: "", up: true },
+          { label: "Total Registrations", value: total, icon: "📋", sub: "Live DB records" },
+          { label: "Attendance Rate", value: `${attendanceRate}%`, icon: "🎙️", sub: `${attendedCount} attended live` },
+          { label: "Top Channel", value: topSource ? topSource[0] : "—", icon: "📸", sub: topSource ? `${topSource[1]} leads` : "No data" },
+          { label: "Top City", value: topCity ? topCity[0] : "—", icon: "📍", sub: topCity ? `${topCity[1]} leads` : "No data" },
         ].map((k) => (
           <div key={k.label} className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm space-y-2">
             <div className="flex items-center justify-between">
@@ -134,14 +159,7 @@ export function AnalyticsDashboard({ total, sources, cities, statuses }: Analyti
               <span className="text-xl">{k.icon}</span>
             </div>
             <p className="text-2xl font-black text-[#143623] capitalize">{k.value}</p>
-            <div className="flex items-center justify-between">
-              <p className="text-[#6b8e78] text-xs font-medium capitalize">{k.sub}</p>
-              {k.delta && (
-                <span className="text-green-700 bg-green-50 border border-green-200 text-[10px] font-black px-1.5 py-0.5 rounded-md">
-                  {k.delta}
-                </span>
-              )}
-            </div>
+            <p className="text-[#6b8e78] text-xs font-medium capitalize">{k.sub}</p>
           </div>
         ))}
       </div>
@@ -149,40 +167,40 @@ export function AnalyticsDashboard({ total, sources, cities, statuses }: Analyti
       {/* ── Conversion Funnel ── */}
       <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[#143623] font-bold text-lg">Live Webinar Conversion Funnel</h2>
-          <span className="text-xs font-bold text-[#6b8e78]">Real-time Conversion Drop-off</span>
+          <h2 className="text-[#143623] font-bold text-lg">Live Conversion Funnel</h2>
+          <span className="text-xs font-bold text-[#6b8e78]">100% Real Database Analytics</span>
         </div>
-        <div className="space-y-5">
-          {funnel.map((step, idx) => {
-            const firstStep = funnel[0]!;
-            const prevStep = idx > 0 ? funnel[idx - 1] : undefined;
-            const barWidth = Math.max(3, Math.min(100, Math.round((step.n / firstStep.n) * 100)));
-            const dropOff = prevStep ? Math.round(((prevStep.n - step.n) / prevStep.n) * 100) : null;
+        
+        {total === 0 ? (
+          <div className="text-center py-10 text-[#6b8e78] text-sm font-medium">
+            No registrations found in the selected date range.
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {funnel.map((step, idx) => {
+              const firstStep = funnel[0]!;
+              const barWidth = firstStep.n > 0 ? Math.max(3, Math.min(100, Math.round((step.n / firstStep.n) * 100))) : 0;
 
-            return (
-              <div key={step.step} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2 font-bold text-[#143623]">
-                    <span>{step.icon}</span>
-                    Step {idx + 1}: {step.step}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    {dropOff !== null && dropOff > 0 && (
-                      <span className="text-red-500 text-xs font-bold">-{dropOff}% drop</span>
-                    )}
+              return (
+                <div key={step.step} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="flex items-center gap-2 font-bold text-[#143623]">
+                      <span>{step.icon}</span>
+                      Step {idx + 1}: {step.step}
+                    </span>
                     <span className="text-[#1e5631] font-extrabold">{step.n.toLocaleString()}</span>
                   </div>
+                  <div className="w-full bg-[#edf6f0] h-3 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#1e5631] to-[#4a9b5e] rounded-full transition-all duration-700"
+                      style={{ width: `${barWidth}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-[#edf6f0] h-3 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#1e5631] to-[#4a9b5e] rounded-full transition-all duration-700"
-                    style={{ width: `${barWidth}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Dual Column: Sources + Cities ── */}
@@ -191,77 +209,65 @@ export function AnalyticsDashboard({ total, sources, cities, statuses }: Analyti
         {/* Traffic Sources */}
         <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
           <h2 className="text-[#143623] font-bold text-lg mb-5">Lead Channel Distribution</h2>
-          <div className="space-y-4">
-            {filteredSources.map(([src, cnt]) => {
-              const pct = Math.round((cnt / filteredTotal) * 100);
-              const gradient = SOURCE_COLORS[src] ?? "from-gray-400 to-gray-500";
-              return (
-                <div key={src} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2 text-[#143623] font-semibold capitalize">
-                      <span>{SOURCE_EMOJI[src] ?? "🔗"}</span>{src}
-                    </span>
-                    <span className="text-[#4a6b57] font-bold">{cnt} <span className="text-[#6b8e78] font-medium">({pct}%)</span></span>
+          {sources.length === 0 ? (
+            <p className="text-[#6b8e78] text-sm font-medium">No lead sources recorded yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {sources.map(([src, cnt]) => {
+                const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+                const gradient = SOURCE_COLORS[src] ?? "from-gray-400 to-gray-500";
+                return (
+                  <div key={src} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-2 text-[#143623] font-semibold capitalize">
+                        <span>{SOURCE_EMOJI[src] ?? "🔗"}</span>{src}
+                      </span>
+                      <span className="text-[#4a6b57] font-bold">{cnt} <span className="text-[#6b8e78] font-medium">({pct}%)</span></span>
+                    </div>
+                    <div className="w-full bg-[#f0f7f2] h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${gradient} transition-all duration-500`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-[#f0f7f2] h-2.5 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full bg-gradient-to-r ${gradient} transition-all duration-500`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Geographic Breakdown */}
         <div className="bg-white border border-[#e2efe6] rounded-2xl p-6 shadow-sm">
           <h2 className="text-[#143623] font-bold text-lg mb-5">Top Geographic Regions</h2>
-          <div className="space-y-3">
-            {filteredCities.map(([city, cnt], i) => {
-              const pct = Math.round((cnt / filteredTotal) * 100);
-              return (
-                <div key={city} className="flex items-center gap-4 p-3 bg-[#f8faf5] border border-[#e2efe6] rounded-xl">
-                  <div className="w-7 h-7 rounded-lg bg-[#1e5631] text-white text-xs font-black flex items-center justify-center flex-shrink-0">
-                    {i + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[#143623] font-bold text-sm">{city}</span>
-                      <span className="text-[#1e5631] font-extrabold text-sm">{cnt}</span>
+          {cities.length === 0 ? (
+            <p className="text-[#6b8e78] text-sm font-medium">No geographic data recorded yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {cities.map(([city, cnt], i) => {
+                const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+                return (
+                  <div key={city} className="flex items-center gap-4 p-3 bg-[#f8faf5] border border-[#e2efe6] rounded-xl">
+                    <div className="w-7 h-7 rounded-lg bg-[#1e5631] text-white text-xs font-black flex items-center justify-center flex-shrink-0">
+                      {i + 1}
                     </div>
-                    <div className="w-full bg-[#e2efe6] h-1.5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#1e5631] rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%` }}
-                      />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[#143623] font-bold text-sm">{city}</span>
+                        <span className="text-[#1e5631] font-extrabold text-sm">{cnt}</span>
+                      </div>
+                      <div className="w-full bg-[#e2efe6] h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#1e5631] rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ── AI Insights ── */}
-      <div className="bg-gradient-to-br from-[#143623] to-[#1e5631] rounded-3xl p-6 text-white shadow-xl">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-lg">🤖</span>
-          <h2 className="font-black text-lg">AI Performance Insights</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { insight: "Saturday 11 AM IST webinars see 24% higher attendance than weekday evenings.", emoji: "📅" },
-            { insight: "Bengaluru & Chennai account for 60%+ of all registrations — target these cities in Instagram ads.", emoji: "📍" },
-            { insight: "Instagram Reels drive 2.3× more registrations than static posts. Prioritize Reels content.", emoji: "📸" },
-          ].map((ins, i) => (
-            <div key={i} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
-              <span className="text-2xl block mb-2">{ins.emoji}</span>
-              <p className="text-green-100 text-sm font-medium leading-relaxed">{ins.insight}</p>
+                );
+              })}
             </div>
-          ))}
+          )}
         </div>
       </div>
 

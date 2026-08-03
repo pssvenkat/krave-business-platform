@@ -21,6 +21,21 @@ export interface ExecutionLogItem {
   icon: string;
 }
 
+const WEBINAR_DATES = [
+  { id: "all", label: "All Webinar Dates" },
+  { id: "2026-09-14", label: "📅 14 Sep 2026, 11:00 AM IST (Upcoming)" },
+  { id: "2026-09-21", label: "📅 21 Sep 2026, 11:00 AM IST (Next Batch)" },
+  { id: "2026-09-28", label: "📅 28 Sep 2026, 11:00 AM IST" },
+];
+
+const TARGET_GROUPS = [
+  { id: "confirmed", label: "All Confirmed Registrants", count: 278 },
+  { id: "attended", label: "Attended Live Attendees", count: 194 },
+  { id: "noshow", label: "No-Show Registrants (Did Not Attend)", count: 84 },
+  { id: "qualified", label: "Qualified CRM Leads", count: 112 },
+  { id: "converted", label: "Converted Paying Customers", count: 64 },
+];
+
 const INITIAL_WORKFLOWS: WorkflowItem[] = [
   {
     id: "wf-1",
@@ -104,12 +119,22 @@ export function AutomationWorkflowList() {
   const [logs, setLogs] = useState<ExecutionLogItem[]>(INITIAL_LOGS);
   const [runningId, setRunningId] = useState<string | null>(null);
 
+  // Broadcast modal state
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
+  const [selectedWebinarDate, setSelectedWebinarDate] = useState("2026-09-14");
+  const [selectedTargetGroup, setSelectedTargetGroup] = useState("confirmed");
+  const [channel, setChannel] = useState<"whatsapp" | "email">("whatsapp");
+  const [messageTemplate, setMessageTemplate] = useState(
+    "Hi {first_name}! 🚀 Reminder for your upcoming Krave Microgreens Webinar on {webinar_date}. Join live here → {youtube_link}"
+  );
+  const [dispatching, setDispatching] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
   const toggleWorkflowStatus = (id: string) => {
     setWorkflows((prev) =>
       prev.map((w) => {
         if (w.id === id) {
           const nextStatus = w.status === "active" ? "paused" : "active";
-          // Append log
           const newLog: ExecutionLogItem = {
             time: "Just now",
             event: `Workflow '${w.name}' ${nextStatus === "active" ? "activated" : "paused"} by admin`,
@@ -146,14 +171,42 @@ export function AutomationWorkflowList() {
     setRunningId(null);
   };
 
+  const handleSendTargetedBroadcast = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDispatching(true);
+    setSuccessMsg(null);
+
+    await new Promise((r) => setTimeout(r, 700));
+
+    const groupObj = TARGET_GROUPS.find((g) => g.id === selectedTargetGroup) || TARGET_GROUPS[0]!;
+    const dateObj = WEBINAR_DATES.find((d) => d.id === selectedWebinarDate) || WEBINAR_DATES[0]!;
+
+    const recipientCount = groupObj.count;
+
+    // Log the targeted broadcast dispatch
+    const newLog: ExecutionLogItem = {
+      time: "Just now",
+      event: `Targeted ${channel.toUpperCase()} Broadcast sent to ${recipientCount} recipients (${groupObj.label} · ${dateObj.label})`,
+      status: "delivered",
+      icon: channel === "whatsapp" ? "💬" : "📧",
+    };
+
+    setLogs((l) => [newLog, ...l]);
+    setDispatching(false);
+    setIsBroadcastModalOpen(false);
+    setSuccessMsg(`Targeted ${channel.toUpperCase()} broadcast sent to ${recipientCount} recipients for ${dateObj.label}!`);
+    setTimeout(() => setSuccessMsg(null), 4500);
+  };
+
+  const currentGroupCount = (TARGET_GROUPS.find((g) => g.id === selectedTargetGroup) || TARGET_GROUPS[0]!).count;
   const activeCount = workflows.filter((w) => w.status === "active").length;
   const totalSent = workflows.reduce((a, w) => a + w.sent, 0);
 
   return (
     <div className="space-y-6">
 
-      {/* ── Top Bar Status ── */}
-      <div className="flex items-center justify-between bg-white border border-[#e2efe6] rounded-2xl p-4 shadow-sm">
+      {/* ── Top Bar Status & Targeted Broadcast CTA ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
           <div>
@@ -161,7 +214,21 @@ export function AutomationWorkflowList() {
             <p className="text-[#6b8e78] text-xs font-medium">{totalSent.toLocaleString()} automated WhatsApp & Email messages delivered</p>
           </div>
         </div>
+
+        <button
+          onClick={() => setIsBroadcastModalOpen(true)}
+          id="send-targeted-broadcast-btn"
+          className="inline-flex items-center gap-2 bg-[#1e5631] hover:bg-[#163f24] text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm"
+        >
+          <span>📢 Send Targeted Broadcast (By Webinar Date)</span>
+        </button>
       </div>
+
+      {successMsg && (
+        <div className="bg-green-50 border border-green-200 text-green-800 text-xs font-bold p-4 rounded-xl transition-all shadow-xs">
+          ✓ {successMsg}
+        </div>
+      )}
 
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -260,6 +327,128 @@ export function AutomationWorkflowList() {
           ))}
         </div>
       </div>
+
+      {/* ── Targeted Broadcast Modal ── */}
+      {isBroadcastModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-[#e2efe6] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#e2efe6] pb-3">
+              <div>
+                <span className="text-xs font-bold text-[#1e5631] uppercase tracking-wider block">Audience Segmentation</span>
+                <h3 className="text-[#143623] font-black text-lg">Send Targeted Broadcast</h3>
+              </div>
+              <button onClick={() => setIsBroadcastModalOpen(false)} className="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
+            </div>
+
+            <form onSubmit={handleSendTargetedBroadcast} className="space-y-4">
+
+              {/* 1. Select Webinar Date */}
+              <div>
+                <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-1.5">
+                  1. Filter by Webinar Date <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedWebinarDate}
+                  onChange={(e) => setSelectedWebinarDate(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white border border-[#d0e6d6] rounded-xl text-sm font-bold text-[#143623]"
+                >
+                  {WEBINAR_DATES.map((d) => (
+                    <option key={d.id} value={d.id}>{d.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 2. Select Target Group / Segment */}
+              <div>
+                <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-1.5">
+                  2. Select Target Group / Segment <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedTargetGroup}
+                  onChange={(e) => setSelectedTargetGroup(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white border border-[#d0e6d6] rounded-xl text-sm font-bold text-[#143623]"
+                >
+                  {TARGET_GROUPS.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.label} ({g.count} recipients)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 3. Dispatch Channel */}
+              <div>
+                <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-1.5">
+                  3. Broadcast Channel
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setChannel("whatsapp")}
+                    className={`py-2.5 px-4 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
+                      channel === "whatsapp"
+                        ? "bg-[#25D366] text-white border-[#25D366] shadow-xs"
+                        : "bg-white text-[#4a6b57] border-[#e2efe6] hover:bg-[#f8faf5]"
+                    }`}
+                  >
+                    <span>💬 Meta WhatsApp API</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setChannel("email")}
+                    className={`py-2.5 px-4 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
+                      channel === "email"
+                        ? "bg-violet-600 text-white border-violet-600 shadow-xs"
+                        : "bg-white text-[#4a6b57] border-[#e2efe6] hover:bg-[#f8faf5]"
+                    }`}
+                  >
+                    <span>📧 Resend Email API</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. Message Content */}
+              <div>
+                <label className="block text-xs font-bold text-[#143623] uppercase tracking-wider mb-1.5">
+                  4. Message Content
+                </label>
+                <textarea
+                  value={messageTemplate}
+                  onChange={(e) => setMessageTemplate(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-2.5 bg-white border border-[#d0e6d6] rounded-xl text-xs font-medium text-[#143623] resize-none"
+                  required
+                />
+                <p className="text-[#6b8e78] text-[11px] mt-1 font-medium">Available tags: {'{first_name}'}, {'{webinar_date}'}, {'{youtube_link}'}</p>
+              </div>
+
+              {/* Recipient Count Pill */}
+              <div className="bg-[#edf6f0] border border-[#d0e6d6] rounded-xl p-3 flex items-center justify-between text-xs font-bold text-[#1e5631]">
+                <span>Targeted Recipients Match:</span>
+                <span className="text-sm font-black">{currentGroupCount} users</span>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={dispatching}
+                  className="flex-1 bg-[#1e5631] hover:bg-[#163f24] disabled:bg-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-sm text-sm flex items-center justify-center gap-2"
+                >
+                  {dispatching ? "Dispatching Broadcast…" : `🚀 Send ${channel.toUpperCase()} Broadcast →`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsBroadcastModalOpen(false)}
+                  className="px-5 py-3 bg-white border border-[#e2efe6] text-[#4a6b57] hover:bg-[#f0f7f2] font-bold text-sm rounded-xl"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── Real-Time Execution Logs ── */}
       <div className="bg-white border border-[#e2efe6] rounded-2xl shadow-sm overflow-hidden">

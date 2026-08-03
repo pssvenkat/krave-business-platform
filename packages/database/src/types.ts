@@ -183,6 +183,7 @@ export interface Database {
           occupation: string | null;
           lead_status: string | null;
           lead_source:
+            | "webinar"
             | "instagram"
             | "youtube"
             | "facebook"
@@ -220,6 +221,7 @@ export interface Database {
           occupation?: string | null;
           lead_status?: string | null;
           lead_source:
+            | "webinar"
             | "instagram"
             | "youtube"
             | "facebook"

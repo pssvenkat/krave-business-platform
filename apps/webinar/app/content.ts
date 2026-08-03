@@ -148,6 +148,7 @@ export const FAQ = [
 ];
 
 export const LEAD_SOURCES = [
+  { value: "webinar", label: "Webinar" },
   { value: "instagram", label: "Instagram" },
   { value: "youtube", label: "YouTube" },
   { value: "facebook", label: "Facebook" },

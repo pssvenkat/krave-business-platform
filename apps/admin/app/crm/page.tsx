@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "../components/sidebar";
+import { InlineStageSelector } from "./stage-selector";
 
 export const metadata = { title: "Lead CRM | Krave Admin" };
 
@@ -57,16 +58,17 @@ async function getData(search: string, stage: string) {
   }
 
   const { data, count } = await q;
-  const leads = (data ?? []).map((r: any, i: number) => {
+  const leads = (data ?? []).map((r: any) => {
     let computedStage = "new";
     if (typeof r.instagram_username === "string" && r.instagram_username.startsWith("stage:")) {
       computedStage = r.instagram_username.replace("stage:", "");
     } else if (r.status === "registered") computedStage = "new";
+    else if (r.status === "contacted") computedStage = "contacted";
     else if (r.status === "confirmed") computedStage = "qualified";
     else if (r.status === "attended") computedStage = "converted";
     else if (r.status === "cancelled") computedStage = "lost";
     else if (["new","contacted","qualified","converted","lost"].includes(r.status)) computedStage = r.status;
-    else computedStage = ["new","contacted","qualified","converted","new","contacted","qualified"][i % 7] ?? "new";
+    else computedStage = "new";
 
     return {
       ...r,
@@ -250,7 +252,21 @@ export default async function CrmPage({ searchParams }: PageProps) {
                             <span className="text-[#1e5631] font-extrabold text-xs">{l.score}</span>
                           </div>
                         </td>
-                        <td className="px-5 py-4">{stageBadge(l.stage)}</td>
+                        <td className="px-5 py-4">
+                          <InlineStageSelector
+                            leadId={l.id}
+                            currentStage={l.stage}
+                            leadData={{
+                              firstName: l.first_name || "",
+                              lastName: l.last_name || "",
+                              email: l.email || "",
+                              phone: l.phone || "",
+                              city: l.city || "",
+                              occupation: l.occupation || "",
+                              leadSource: l.lead_source || "webinar",
+                            }}
+                          />
+                        </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Link

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "../../components/sidebar";
+import { InteractiveStageTracker } from "../stage-selector";
 
 type StageMeta = { label: string; color: string; dot: string };
 
@@ -58,11 +59,12 @@ export default async function LeadDetailPage({ params }: PageProps) {
   if (typeof lead.instagram_username === "string" && lead.instagram_username.startsWith("stage:")) {
     stage = lead.instagram_username.replace("stage:", "");
   } else if (lead.status === "registered") stage = "new";
+  else if (lead.status === "contacted") stage = "contacted";
   else if (lead.status === "confirmed") stage = "qualified";
   else if (lead.status === "attended") stage = "converted";
   else if (lead.status === "cancelled") stage = "lost";
   else if (["new","contacted","qualified","converted","lost"].includes(lead.status)) stage = lead.status;
-  else stage = (["new","contacted","qualified","converted","new","contacted"][Math.abs(id.charCodeAt(0) % 6)] ?? "new");
+  else stage = "new";
 
   const score = Math.min(98, 60 + (id.charCodeAt(0) % 38));
   const stageMeta: StageMeta = STAGE_META[stage] ?? DEFAULT_STAGE_META;
@@ -136,26 +138,21 @@ export default async function LeadDetailPage({ params }: PageProps) {
               </p>
             </div>
 
-            {/* Stage Tracker */}
-            <div className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm space-y-3">
-              <p className="text-[#143623] font-bold text-sm">Pipeline Stage</p>
-              {(["new","contacted","qualified","converted"] as const).map((s) => {
-                const m: StageMeta = STAGE_META[s] ?? DEFAULT_STAGE_META;
-                const stages = ["new","contacted","qualified","converted"];
-                const currentIdx = stages.indexOf(stage);
-                const thisIdx = stages.indexOf(s);
-                const done = thisIdx <= currentIdx;
-                return (
-                  <div key={s} className="flex items-center gap-3">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${done ? "bg-[#1e5631] text-white" : "bg-[#edf6f0] text-[#6b8e78]"}`}>
-                      {done ? "✓" : " "}
-                    </div>
-                    <span className={`text-sm font-semibold ${done ? "text-[#143623]" : "text-[#6b8e78]"}`}>
-                      {m.label}
-                    </span>
-                  </div>
-                );
-              })}
+            {/* Interactive Stage Tracker */}
+            <div className="bg-white border border-[#e2efe6] rounded-2xl p-5 shadow-sm">
+              <InteractiveStageTracker
+                leadId={id}
+                currentStage={stage}
+                leadData={{
+                  firstName: lead.first_name || "",
+                  lastName: lead.last_name || "",
+                  email: lead.email || "",
+                  phone: lead.phone || "",
+                  city: lead.city || "",
+                  occupation: lead.occupation || "",
+                  leadSource: lead.lead_source || "webinar",
+                }}
+              />
             </div>
           </div>
 
